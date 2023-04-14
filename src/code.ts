@@ -22,10 +22,13 @@ function create(this : Phaser.Scene ){
 	
 	load_level({"player_x" : 200, "player_y" : 300, walls : 
 	[
-		{"x" : 20, "y":30, "width":40, "height":100},
+		{"x" : 540, "y":30, "width":40, "height":100},
 		{"x" : 220, "y":30, "width":100, "height":10}
 	]
 	}, this)
+
+	
+	//add_wall(10, 50, 100, 200, this);
 }
 
 function load_level(val : any, scene : Phaser.Scene){
@@ -37,24 +40,25 @@ function load_level(val : any, scene : Phaser.Scene){
 	
 	scene.data.set("player", scene.physics.add.image(val.player_x, val.player_y, "player"));
 	for(var wall of val.walls){
-		var wall_obj = scene.physics.add.image(0,0 ,"wall"); 
-		wall_obj.setBodySize(wall.width,wall.height, false);
-		wall_obj.setCrop(0,0,wall.width,wall.height);
-		wall_obj.setPosition(wall.x + wall.width/2 + wall_image_width/2, wall.y + wall.height/2 + wall_image_height/2);
-		// it thinks that (300, 300) is top left , because wall image size is 600x600 
-		// stop walls from moving when collided with
-		scene.data.get("walls").add(wall_obj);
+		add_wall(wall.x, wall.y, wall.width, wall.height, scene); 
 	}
 
 	//obj1 is player, obj2 is wall (so opposite order of here)
 	scene.physics.add.collider(scene.data.get("walls"), scene.data.get("player"),collide);
-
-	for(var wall_obj_2 of scene.data.get("walls").children.entries){
-		wall_obj_2.setImmovable(true);
+	for(var wall of scene.data.get("walls").children.entries){
+		wall.setImmovable(true);
 	}
-	
+
 
 }
+
+function add_wall(x: number, y: number, width: number, height: number, scene: Phaser.Scene) {
+	var wall_obj = scene.physics.add.image(x, y, "wall").setOrigin(0, 0);
+	wall_obj.setCrop(0, 0, width, height);
+	wall_obj.body.setSize(width, height, false);
+	scene.data.get("walls").add(wall_obj);
+  }
+
 
 function collide(obj1 : Phaser.Physics.Arcade.Image, obj2 : Phaser.Physics.Arcade.Image){
 	console.log(obj1);
@@ -64,7 +68,6 @@ function collide(obj1 : Phaser.Physics.Arcade.Image, obj2 : Phaser.Physics.Arcad
 
 function update(this : Phaser.Scene ){
 	const game = this.game;
-	w = this.data.get("walls").children.entries[0];
 
 	var player : Phaser.Physics.Arcade.Image = this.data.get("player") ;
 	if(this.data.get("x") !== undefined && this.data.get("y") !== undefined){ 
@@ -102,7 +105,7 @@ const config = {
 	  default: 'arcade',
 	  arcade: {
 		  fixedStep : true,
-		  debug: false,
+		  debug: true,
 		  fps: fps
 	  }
   },
