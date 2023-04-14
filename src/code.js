@@ -4,32 +4,43 @@ function preload() {
     this.load.image("wall", "wall.png");
 }
 function create() {
-    this.data.set("player", this.physics.add.image(game_width / 2, game_height / 2, "player"));
     this.input.on("pointerdown", function () {
         console.log(this.x, this.y);
         this.scene.data.set("x", this.x);
         this.scene.data.set("y", this.y);
     });
-    var wall_set = this.physics.add.group();
-    this.data.set("walls", wall_set);
-    wall_set.add(this.physics.add.image(300, 300, "wall"));
-    this.physics.add.collider(this.data.get("walls"), this.data.get("player"), collide);
-    for (var _i = 0, _a = wall_set.children.entries; _i < _a.length; _i++) {
+    this.data.set("walls", this.physics.add.group());
+    load_level({ "player_x": 200, "player_y": 300, walls: [
+            { "x": 20, "y": 30, "width": 40, "height": 100 },
+            { "x": 220, "y": 30, "width": 100, "height": 10 }
+        ]
+    }, this);
+}
+function load_level(val, scene) {
+    if (scene.data.get("walls") === undefined) {
+        throw "walls must be in scene";
+    }
+    scene.data.set("player", scene.physics.add.image(val.player_x, val.player_y, "player"));
+    for (var _i = 0, _a = val.walls; _i < _a.length; _i++) {
         var wall = _a[_i];
-        if (wall instanceof Phaser.Physics.Arcade.Image) {
-            wall.setImmovable(true);
-        }
-        else {
-            throw "walls must be physics image";
-        }
+        var wall_obj = scene.physics.add.image(0, 0, "wall");
+        wall_obj.setBodySize(wall.width, wall.height, false);
+        wall_obj.setCrop(0, 0, wall.width, wall.height);
+        wall_obj.setPosition(wall.x + wall.width / 2 + wall_image_width / 2, wall.y + wall.height / 2 + wall_image_height / 2);
+        scene.data.get("walls").add(wall_obj);
+    }
+    scene.physics.add.collider(scene.data.get("walls"), scene.data.get("player"), collide);
+    for (var _b = 0, _c = scene.data.get("walls").children.entries; _b < _c.length; _b++) {
+        var wall_obj_2 = _c[_b];
+        wall_obj_2.setImmovable(true);
     }
 }
 function collide(obj1, obj2) {
     console.log(obj1);
-    console.log(obj2);
 }
 function update() {
     var game = this.game;
+    w = this.data.get("walls").children.entries[0];
     var player = this.data.get("player");
     if (this.data.get("x") !== undefined && this.data.get("y") !== undefined) {
         var direction = new Phaser.Math.Vector2(this.data.get("x") - player.x, this.data.get("y") - player.y);
