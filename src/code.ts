@@ -1,4 +1,6 @@
 /// <reference path="../types/phaser.d.ts"/>
+/// <reference path="../types/lodash/index.d.ts"/>
+
 
 function preload(this : Phaser.Scene ){
 	console.log("preload called");
@@ -8,7 +10,7 @@ function preload(this : Phaser.Scene ){
 
 function create(this : Phaser.Scene ){
 	
-	
+	var x = _.range(1, 5); 
 	this.input.on("pointerdown",function(this : Phaser.Input.InputPlugin){
 		console.log(this.x, this.y);
 		this.scene.data.set("x", this.x);
@@ -22,7 +24,7 @@ function create(this : Phaser.Scene ){
 	
 	load_level({"player_x" : 200, "player_y" : 300, walls : 
 	[
-		{"x" : 540, "y":30, "width":40, "height":100},
+		{"x" : 4, "y":4, "width":40, "height":100},
 		{"x" : 220, "y":30, "width":100, "height":10}
 	]
 	}, this)
@@ -58,8 +60,18 @@ function add_wall(x: number, y: number, width: number, height: number, scene: Ph
 	wall_obj.body.setSize(width, height, false);
 	scene.data.get("walls").add(wall_obj);
   }
-
-
+  /*
+function add_wall(x:number, y:number, width:number, height:number, scene:Phaser.Scene){
+	var wall_obj = scene.physics.add.image(0,0 ,"wall"); 
+	wall_obj.setCrop(0,0,width, height); 
+	wall_obj.setSize(width, height);// crops image and object
+	wall_obj.setDisplayOrigin(0,0);  // display in correct location
+	wall_obj.setPosition(x, y); 
+	wall_obj.body.setOffset(0, 0); // collider in correct location
+	scene.data.get("walls").add(wall_obj);
+	// note : need to call setImmovable !
+}
+*/
 function collide(obj1 : Phaser.Physics.Arcade.Image, obj2 : Phaser.Physics.Arcade.Image){
 	console.log(obj1);
 	
