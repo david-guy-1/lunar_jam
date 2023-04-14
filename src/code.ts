@@ -2,7 +2,8 @@
 
 function preload(this : Phaser.Scene ){
 	console.log("preload called");
-	this.load.image("player", "test.jpg")
+	this.load.image("player", "test.png")
+	this.load.image("wall", "wall.png")
 }
 
 function create(this : Phaser.Scene ){
@@ -12,12 +13,38 @@ function create(this : Phaser.Scene ){
 		this.scene.data.set("x", this.x);
 		this.scene.data.set("y", this.y);
 	}); 
+
+	// add a wall
+	var wall_set = this.physics.add.group();
+	this.data.set("walls", wall_set);
+	wall_set.add(this.physics.add.image(300, 300, "wall"));
+	
+	/// obj2 is the wall  
+	this.physics.add.collider(this.data.get("walls"), this.data.get("player"),collide);
+	// stop walls from moving
+	
+	for(var wall of wall_set.children.entries){
+		if(wall instanceof Phaser.Physics.Arcade.Image){
+			wall.setImmovable(true);
+		} else {
+			throw "walls must be physics image";
+		}
+	}
+
+	
+
+}
+
+function collide(obj1 : Phaser.Physics.Arcade.Image, obj2 : Phaser.Physics.Arcade.Image){
+	console.log(obj1);
+	console.log(obj2);
 	
 
 }
 
 function update(this : Phaser.Scene ){
-	console.log("update called");
+	const game = this.game;
+
 	var player : Phaser.Physics.Arcade.Image = this.data.get("player") ;
 	if(this.data.get("x") !== undefined && this.data.get("y") !== undefined){ 
 		var direction = new Phaser.Math.Vector2( this.data.get("x")-player.x  , this.data.get("y")- player.y );
@@ -29,6 +56,7 @@ function update(this : Phaser.Scene ){
 		
 		player.setVelocity(direction.x, direction.y);
 	}; 
+
 }
 
 
