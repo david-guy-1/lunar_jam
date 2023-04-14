@@ -1,0 +1,14 @@
+https://itch.io/jam/mini-jam-130-lunar
+
+ideas : a shooter game
+
+beat each level in 10 seconds ( might be too short to beat an entire level, maybe beat a single phase of a boss in 10 seconds, or a boss that changes attack type every 10 seconds)
+
+make it lunar themed : moon phases cycle every 10 seconds.
+
+maybe some enemies only attack when the moon is a certain phase, or some enemies only spawn at certain phases.
+
+basically , a "global" 10 second cycle controls the game.
+
+
+
