@@ -10,5 +10,17 @@ maybe some enemies only attack when the moon is a certain phase, or some enemies
 
 basically , a "global" 10 second cycle controls the game.
 
+---
 
+however, I want to avoid making a Touhou-style bullet hell shooter game , since it would be too similar to my previous game.
+
+maybe.. the player can only shoot once every 10 seconds, so the player has to carefully choose where to shoot , instead of just spamming shots. That adds some strategic depth to the game
+
+or maybe, alternate between the player attacking and player doing other stuff every 10 seconds.
+
+during the "other stuff" part, the player should get into position to line up shots, etc. maybe also attack in ways other than shooting, such as placing explosives, and then detonating them during the 10 seconds of shooting. 
+
+---
+
+They also said a "top down" shooter, so probably I shouldn't make a platformer or something like that. 
 
