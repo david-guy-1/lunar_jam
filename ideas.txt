@@ -24,3 +24,12 @@ during the "other stuff" part, the player should get into position to line up sh
 
 They also said a "top down" shooter, so probably I shouldn't make a platformer or something like that. 
 
+
+
+Maybe in the game you only have 10 seconds of oxygen before you need to retreat to your base to replenish your supply. This means that you need to balance your time between fighting off the aliens and making sure you have enough oxygen to survive.
+
+To make things more interesting, you could have different types of aliens with varying attack patterns and weaknesses, as well as power-ups and upgrades that you can collect by defeating certain enemies or exploring the moon's surface.
+
+idea #2:
+
+a game where you manage a society on the moon but every ten seconds is a decade. You try to progress as much as you can and after 5 centuries the game ends.
