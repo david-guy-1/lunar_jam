@@ -8,8 +8,8 @@
       "removeComments": true,
       "preserveConstEnums": true,
       "sourceMap": true,
-      "jsx": "react-jsx",
-      "moduleResolution":"node"
+      "moduleResolution":"node",
+      "importHelpers": true
     },
     "include": ["src"],
     "exclude": ["node_modules"],
