@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+      
+      "lib":["ES6", "DOM"],
+      "allowJs": true,
+      "module": "system",
+      "noImplicitAny": true,
+      "removeComments": true,
+      "preserveConstEnums": true,
+      "sourceMap": true,
+      "jsx": "react-jsx",
+      "moduleResolution":"node"
+    },
+    "include": ["src"],
+    "exclude": ["node_modules"],
+  } 
