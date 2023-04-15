@@ -4,4 +4,5 @@ var fps = 60;
 var player_speed = 200;
 var wall_image_width = 600;
 var wall_image_height = 600;
+var enemy_speed = 150;
 //# sourceMappingURL=constants.js.map
