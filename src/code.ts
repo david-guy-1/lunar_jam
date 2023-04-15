@@ -7,6 +7,7 @@ function preload(this : Phaser.Scene ){
 	this.load.image("player", "test.png")
 	this.load.image("wall", "wall.png")
 	
+	this.load.image("bullet", "bullet.png")
 	this.load.image("enemy1", "enemy1.png")
 	this.load.image("spawner", "spawner.png")
 }
@@ -14,25 +15,66 @@ function preload(this : Phaser.Scene ){
 
 
 function mousedown_call (this:Phaser.Input.InputPlugin ) {
+	var in_click_x = this.cameras.main.scrollX + this.x;
+	var in_click_y = this.cameras.main.scrollY + this.y
+	move_to(in_click_x, in_click_y, this.scene);
 
-	//  player move
-	this.scene.data.set("x", this.x);
-    this.scene.data.set("y", this.y);
+}
+
+function keydown_call (letter : string, x : number, y : number, scene : Phaser.Scene ) {
+	var in_click_x = scene.cameras.main.scrollX + x;
+	var in_click_y = scene.cameras.main.scrollY + y;
+	var time = scene.time.now;
+	var cooldown = scene.data.get("shoot_cd");
+	var player : Phaser.Types.Physics.Arcade.ImageWithDynamicBody = scene.data.get("player") ; 
+	
+	if(cooldown !== undefined && cooldown > time){
+		;
+	} else {
+		// shoot now;
+		scene.data.set("shoot_cd", time + 10000);
+		shoot(x, y, player_bullet_speed, scene);
+		player.tint = 0xcccccc;
+		scene.time.addEvent({"callback" : (x : {tint : number}) => x.tint = 0xffffff, args:[player], delay:10000})
+	}
 
 }
 
 
+function move_to(x : number, y : number ,  scene : Phaser.Scene){
+	scene.data.set("x", x);
+	scene.data.set("y", y);
+}
+function shoot(x : number, y : number, speed : number, scene : Phaser.Scene){
+	var px : number = scene.data.get("player").x;
+	var py : number = scene.data.get("player").y;
+	var v = new Phaser.Math.Vector2(x-px , y-py); 
+	v.setLength(speed);
+	var group :  Phaser.Physics.Arcade.Group = scene.data.get("player_bullets");
+	var bullet = scene.physics.add.image(px, py, "bullet");
+	group.add(bullet); // adding to group sets velocity to zero.
+	bullet.setVelocity(v.x, v.y);
+}
+
 function create(this : Phaser.Scene ){
-	
-	var x = _.range(1, 5); 
+
 	this.input.on("pointerdown",mousedown_call);
+	this.data.set("keys",  this.input.keyboard.addKeys('Q,W,E,R,T,A,S,D,F,G'));
 	
 	this.data.set("walls", this.physics.add.group());
 	this.data.set("spawners", this.physics.add.group());
 	this.data.set("enemies", this.physics.add.group());
+	this.data.set("player_bullets", this.physics.add.group());
 
+	/*
+	this.time.addEvent({
+		callback : shoot,
+		args : [Math.random () * 300, Math.random() * 300, 1000, this],
+		delay : 1000,
+		loop : true
+	})
+	*/
 
-	
 	load_level({"player_x" : 200, "player_y" : 300, walls : 
 	[
 		{"x" : 4, "y":4, "width":40, "height":100},
@@ -55,6 +97,9 @@ function load_level(val : any, scene : Phaser.Scene){
 		}
 	}
 	scene.data.set("player", scene.physics.add.image(val.player_x, val.player_y, "player"));
+
+	scene.cameras.main.startFollow(scene.data.get("player"));
+	
 	for(var wall of val.walls){
 		add_wall(wall.x, wall.y, wall.width, wall.height, scene); 
 	}
@@ -161,6 +206,11 @@ function update(this : Phaser.Scene ){
 		
 		player.setVelocity(direction.x, direction.y);
 	}; 
+	// 
+	var keys = this.data.get("keys"); 
+	if(keys.Q.isDown ){
+		keydown_call("Q", this.input.x, this.input.y, this );
+	}
 
 }
 
