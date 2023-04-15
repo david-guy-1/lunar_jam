@@ -1,12 +1,19 @@
 /// <reference path="../types/phaser.d.ts"/>
 /// <reference path="../types/lodash/index.d.ts"/>
+type db = Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
 
+type wall_data = {"x" : number, "y":number, "width":number, "height":number, type:"wood"|"metal"}
+type spawner_data = {"x":number, "y":number, "delay" : number}; 
+type level_data = {"player_x" : number, "player_y" : number, walls:wall_data[], spawners:spawner_data[]}
 
 function preload(this : Phaser.Scene ){
 	console.log("preload called");
 	this.load.image("player", "test.png")
 	this.load.image("wall", "wall.png")
+	this.load.image("metal_wall", "metal_wall.png")
 	
+	this.load.image("bomb", "bomb.png")
+	this.load.image("explosion", "explosion.png")
 	this.load.image("bullet", "bullet.png")
 	this.load.image("enemy1", "enemy1.png")
 	this.load.image("spawner", "spawner.png")
@@ -22,22 +29,36 @@ function mousedown_call (this:Phaser.Input.InputPlugin ) {
 }
 
 function keydown_call (letter : string, x : number, y : number, scene : Phaser.Scene ) {
+	console.log(letter);
 	var in_click_x = scene.cameras.main.scrollX + x;
 	var in_click_y = scene.cameras.main.scrollY + y;
 	var time = scene.time.now;
 	var cooldown = scene.data.get("shoot_cd");
-	var player : Phaser.Types.Physics.Arcade.ImageWithDynamicBody = scene.data.get("player") ; 
+	var bomb_cooldown = scene.data.get("bomb_cd");
+	var player : db = scene.data.get("player") ; 
+	var way_x = in_click_x - player.x;
+	var way_y = in_click_y - player.y;
 	
+	// shoot now;		
 	if(cooldown !== undefined && cooldown > time){
 		;
 	} else {
-		// shoot now;
-		scene.data.set("shoot_cd", time + 10000);
-		shoot(x, y, player_bullet_speed, scene);
-		player.tint = 0xcccccc;
-		scene.time.addEvent({"callback" : (x : {tint : number}) => x.tint = 0xffffff, args:[player], delay:10000})
+		if(letter === "Q"){
+			scene.data.set("shoot_cd", time + player_shoot_delay);
+			shoot(way_x, way_y, player_bullet_speed, scene);
+			player.tint = 0xcccccc;
+			scene.time.addEvent({"callback" : (x : {tint : number}) => x.tint = 0xffffff, args:[player], delay:player_shoot_delay})
+		}
 	}
-
+	// place bomb, 1s cooldown
+	if(bomb_cooldown !== undefined && bomb_cooldown > time){
+		;
+	} else {
+		if(letter === "W"){
+			scene.data.set("bomb_cd", time + player_bomb_delay);
+			bomb(way_x, way_y, player_bomb_speed, scene); 
+		}
+	}
 }
 
 
@@ -45,26 +66,58 @@ function move_to(x : number, y : number ,  scene : Phaser.Scene){
 	scene.data.set("x", x);
 	scene.data.set("y", y);
 }
+
+
 function shoot(x : number, y : number, speed : number, scene : Phaser.Scene){
 	var px : number = scene.data.get("player").x;
 	var py : number = scene.data.get("player").y;
-	var v = new Phaser.Math.Vector2(x-px , y-py); 
+	var v = new Phaser.Math.Vector2(x , y); 
 	v.setLength(speed);
 	var group :  Phaser.Physics.Arcade.Group = scene.data.get("player_bullets");
 	var bullet = scene.physics.add.image(px, py, "bullet");
-	group.add(bullet); // adding to group sets velocity to zero.
+	group.add(bullet); // adding to group sets velocity to zero, so add to group first before setting velocity.
 	bullet.setVelocity(v.x, v.y);
 }
 
+function bomb(x : number, y : number, speed : number, scene : Phaser.Scene){
+	var px : number = scene.data.get("player").x;
+	var py : number = scene.data.get("player").y;
+	var v = new Phaser.Math.Vector2(x , y); 
+	v.setLength(speed);
+	var group :  Phaser.Physics.Arcade.Group = scene.data.get("player_bombs");
+	var bomb = scene.physics.add.image(px, py, "bomb");
+	group.add(bomb); // adding to group sets velocity to zero, so add to group first before setting velocity.
+	// destroy the bomb 
+	var timer = scene.time.addEvent({
+		callback : (x : any)  => x.setVelocity(0,0),
+		delay : player_bomb_move_time,
+		args : [bomb]
+	})
+	bomb.setData("timers", [timer]);
+
+	bomb.setVelocity(v.x, v.y);
+}	
+
+function detonate_bomb(bomb : db, scene  : Phaser.Scene){
+	var [bx, by] = [bomb.x, bomb.y];
+	var explosion = scene.physics.add.image(bx, by, "explosion");
+	var timer = scene.time.addEvent({callback : destroy_obj, delay : player_explosion_lifespan, args : [explosion]});
+	explosion.setData("timers", [timer]);
+	scene.data.get("player_explosions").add(explosion);
+	
+	destroy_obj(bomb);
+	
+}
 function create(this : Phaser.Scene ){
 
 	this.input.on("pointerdown",mousedown_call);
 	this.data.set("keys",  this.input.keyboard.addKeys('Q,W,E,R,T,A,S,D,F,G'));
-	
 	this.data.set("walls", this.physics.add.group());
 	this.data.set("spawners", this.physics.add.group());
 	this.data.set("enemies", this.physics.add.group());
 	this.data.set("player_bullets", this.physics.add.group());
+	this.data.set("player_bombs", this.physics.add.group());
+	this.data.set("player_explosions", this.physics.add.group());
 
 	/*
 	this.time.addEvent({
@@ -77,10 +130,10 @@ function create(this : Phaser.Scene ){
 
 	load_level({"player_x" : 200, "player_y" : 300, walls : 
 	[
-		{"x" : 4, "y":4, "width":40, "height":100},
-		{"x" : 220, "y":30, "width":100, "height":10}
+		{"x" : 4, "y":4, "width":40, "height":100, type:"metal"},
+		{"x" : 220, "y":30, "width":100, "height":10, type:"wood"}
 	], "spawners"  : [
-		{"x" : 600, "y" : 300}
+		{"x" : 600, "y" : 300, delay : 2000}
 	]
 	}, this)
 
@@ -88,10 +141,10 @@ function create(this : Phaser.Scene ){
 	//add_wall(10, 50, 100, 200, this);
 }
 
-function load_level(val : any, scene : Phaser.Scene){
+function load_level(val : level_data, scene : Phaser.Scene){
 	// player_x, player_y, list of walls 
 	// walls are : [x, y, width, height]
-	for(var item of ["walls", "spawners", "enemies"]){
+	for(let item of ["walls", "spawners", "enemies"]){
 		if(scene.data.get(item) === undefined){
 			throw item + " must be in scene";
 		}
@@ -100,18 +153,18 @@ function load_level(val : any, scene : Phaser.Scene){
 
 	scene.cameras.main.startFollow(scene.data.get("player"));
 	
-	for(var wall of val.walls){
-		add_wall(wall.x, wall.y, wall.width, wall.height, scene); 
+	for(let wall of val.walls){
+		add_wall(wall.x, wall.y, wall.width, wall.height, wall.type, scene); 
 	}
 
 	//obj1 is player, obj2 is wall (so opposite order of here)
 	scene.physics.add.collider(scene.data.get("walls"), scene.data.get("player"),collide);
-	for(var wall of scene.data.get("walls").children.entries){
+	for(let wall of scene.data.get("walls").children.entries){
 		wall.setImmovable(true);
 	}
 
-	for(var spawner of val.spawners){
-		add_spawner(spawner.x, spawner.y, scene)
+	for(let spawner of val.spawners){
+		add_spawner(spawner.x, spawner.y,spawner.delay,  scene)
 	}
 
 
@@ -119,7 +172,7 @@ function load_level(val : any, scene : Phaser.Scene){
 }
 
 function get_vector_towards_player(scene : Phaser.Scene, obj : {x : number, y : number}, length : number = 1){
-	var player : Phaser.Types.Physics.Arcade.ImageWithDynamicBody = scene.data.get("player"); 
+	var player : db = scene.data.get("player"); 
 	var v = new Phaser.Math.Vector2(player.x  - obj.x, player.y - obj.y );
 	v.setLength(length);
 	return v;
@@ -129,38 +182,52 @@ function move_towards_player(scene : Phaser.Scene, object : {x : number, y : num
 	object.setVelocity(v.x , v.y); 
 }
 
-function add_spawner(x : number, y : number, scene : Phaser.Scene){
+function destroy_obj(obj : {destroy : () => any, getData : any}){
+	var items : ({destroy : () => void })[] | undefined = obj.getData("timers");
+	if(items !== undefined){
+		for(let item of items){
+			item.destroy();
+		}
+	}
+	obj.destroy();
+}
+
+function add_spawner(x : number, y : number, delay : number, scene : Phaser.Scene){
 	var spawner_obj = scene.physics.add.image(x,y, "spawner");
+	
 	scene.time.addEvent({
-		callback : function(scene : Phaser.Scene, spawner : Phaser.Types.Physics.Arcade.ImageWithDynamicBody){
+		callback : function(scene : Phaser.Scene, spawner : db){
+			if(!spawner.active){
+				return;
+			}
 			var new_image = scene.physics.add.image(spawner.x, spawner.y, "enemy1");
 			scene.data.get("enemies").add(new_image);
 			var v = get_vector_towards_player(scene, new_image, enemy_speed); 
 			new_image.setVelocity(v.x, v.y);
 			// destroy after 5 seconds 
 			var destroy_timer = scene.time.addEvent({
-				callback : function(thing : Phaser.Types.Physics.Arcade.ImageWithDynamicBody){
-					thing.getData("move_timer").destroy();
-					thing.destroy(); 
-					
+				callback : function(thing : db){
+					if(!thing.active){
+						return;
+					}
+					destroy_obj(thing);
 				}, 
 				args : [new_image],
-				delay : 5000
+				delay : delay
 			})
 			// move towards player
 			var move_timer = scene.time.addEvent({
-				callback : function(scene : Phaser.Scene, thing : Phaser.Types.Physics.Arcade.ImageWithDynamicBody){
+				callback : function(scene : Phaser.Scene, thing : db){
+					if(!thing.active){
+						return;
+					}
 					move_towards_player(scene, thing, enemy_speed); 
 				}, 
 				args : [scene , new_image],
 				delay : 300,
-				loop : true
+				repeat : 20
 			})
-			new_image.setData("move_timer", move_timer);
-			
-			new_image.setData("destroy_timer", destroy_timer);
-
-
+			new_image.setData("timers", [move_timer, destroy_timer]);
 		},
 		args : [scene, spawner_obj],
 		delay : 2600,
@@ -168,11 +235,18 @@ function add_spawner(x : number, y : number, scene : Phaser.Scene){
 	})
 	scene.data.get("spawners").add(spawner_obj);
 }
-function add_wall(x: number, y: number, width: number, height: number, scene: Phaser.Scene) {
-	var wall_obj = scene.physics.add.image(x, y, "wall").setOrigin(0, 0);
+function add_wall(x: number, y: number, width: number, height: number, type : "metal" | "wood" , scene: Phaser.Scene) {
+	var wall_obj = scene.physics.add.image(x, y, type === "metal" ? "metal_wall" : "wall")
+	wall_obj.setOrigin(0, 0);
 	wall_obj.setCrop(0, 0, width, height);
 	wall_obj.body.setSize(width, height, false);
+	wall_obj.setData("type", type);
 	scene.data.get("walls").add(wall_obj);
+	//@ts-ignore 
+	wall_obj.getBounds = () => new Phaser.Geom.Rectangle(x, y, width, height); 
+	if(wall_obj.getBounds().width == 600){
+		throw "invalid wall";
+	}
   }
   /*
 function add_wall(x:number, y:number, width:number, height:number, scene:Phaser.Scene){
@@ -206,12 +280,45 @@ function update(this : Phaser.Scene ){
 		
 		player.setVelocity(direction.x, direction.y);
 	}; 
-	// 
+	// check keys 
 	var keys = this.data.get("keys"); 
-	if(keys.Q.isDown ){
-		keydown_call("Q", this.input.x, this.input.y, this );
+	for(let item in keys) {
+		if(keys[item].isDown ){
+			keydown_call(item, this.input.x, this.input.y, this );
+		}
 	}
+	// bullet and enemy collision
+	var collisions : {v1 :  Phaser.Physics.Arcade.Group, v2 :  Phaser.Physics.Arcade.Group, fn : (x : db, y : db) => any }[] = [];
+	var bullets :  Phaser.Physics.Arcade.Group= this.data.get("player_bullets");
+	var enemies :  Phaser.Physics.Arcade.Group= this.data.get("enemies");
+	var bombs :  Phaser.Physics.Arcade.Group= this.data.get("player_bombs");
+	var explosions :  Phaser.Physics.Arcade.Group= this.data.get("player_explosions");
+	var walls :  Phaser.Physics.Arcade.Group= this.data.get("walls");
+	collisions.push({"v1":bullets, "v2":enemies, "fn":(x,y) => destroy_obj(y)}); 
+	
+	collisions.push({"v1":bullets, "v2":bombs, "fn":(x,y) => detonate_bomb(y, this)}); 
 
+	collisions.push({"v1":explosions, "v2":enemies, "fn":(x,y) => destroy_obj(y)}); 
+
+	collisions.push({"v1":explosions, "v2":walls, "fn":function(x,y){if(y.getData("type")==="wood"){destroy_obj(y)}}});
+
+	for(let collider_check of collisions){
+		for(let item of collider_check.v1.children.entries){
+			if(item.active === false){
+				continue;
+			}
+			for(let item2 of collider_check.v2.children.entries){
+				if(item2.active === false ){
+					continue;
+				}
+				if(Phaser.Geom.Intersects.RectangleToRectangle((item as db).getBounds() ,(item2 as db).getBounds())){
+					collider_check.fn(item as db, item2 as db); 
+				}
+			}
+		}
+	}
+	
+	
 }
 
 
