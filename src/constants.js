@@ -10,5 +10,6 @@ var player_bullet_speed = 1000;
 var player_bomb_speed = 200;
 var player_bomb_delay = 1000;
 var player_bomb_move_time = 1000;
+var bomb_bullet_count = 12;
 var player_explosion_lifespan = 100;
 //# sourceMappingURL=constants.js.map

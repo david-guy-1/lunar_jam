@@ -12,6 +12,6 @@ const player_bullet_speed = 1000;
 const player_bomb_speed = 200;
 const player_bomb_delay = 1000;
 const player_bomb_move_time = 1000;
-
+const bomb_bullet_count = 12; 
 
 const player_explosion_lifespan = 100;
