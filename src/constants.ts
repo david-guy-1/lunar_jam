@@ -6,7 +6,7 @@ const wall_image_width = 600;
 const wall_image_height = 600; 
 const enemy_speed = 150;
 const enemy_lifespan = 5000;
-const player_shoot_delay = 1000;
+const player_shoot_delay = 10000;
 const player_bullet_speed = 1000;
 
 const player_bomb_speed = 200;
