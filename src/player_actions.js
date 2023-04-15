@@ -41,17 +41,19 @@ function detonate_bomb(bomb, scene) {
     destroy_obj(bomb);
 }
 function clear_switch(key, scene) {
+    var to_destroy = [];
     for (var _i = 0, _a = scene.data.get("walls").children.entries; _i < _a.length; _i++) {
         var item = _a[_i];
         if (item.getData("switch") === key) {
-            destroy_obj(item);
+            to_destroy.push(item);
         }
     }
     for (var _b = 0, _c = scene.data.get("switches").children.entries; _b < _c.length; _b++) {
         var item = _c[_b];
         if (item.getData("key") === key) {
-            destroy_obj(item);
+            to_destroy.push(item);
         }
     }
+    to_destroy.forEach(function (x) { return destroy_obj(x); });
 }
 //# sourceMappingURL=player_actions.js.map

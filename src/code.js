@@ -12,6 +12,7 @@ function preload() {
     this.load.image("bullet", "bullet.png");
     this.load.image("enemy1", "enemy1.png");
     this.load.image("spawner", "spawner.png");
+    this.load.image("end_img", "end_img.png");
     this.load.image("nothing", "nothing.png");
     this.load.image("explosion_blank", "explosion_blank.png");
 }
@@ -19,6 +20,7 @@ function create() {
     this.input.on("pointerdown", mousedown_call);
     this.data.set("keys", this.input.keyboard.addKeys('Q,W,E,R,T,A,S,D,F,G'));
     this.data.set("player_g", this.physics.add.group());
+    this.data.set("end_g", this.physics.add.group());
     this.data.set("walls", this.physics.add.group());
     this.data.set("spawners", this.physics.add.group());
     this.data.set("enemies", this.physics.add.group());
@@ -32,16 +34,9 @@ function create() {
         frames: this.anims.generateFrameNumbers('explosion_anim_sheet', { start: 1, end: 14 }),
         frameRate: 24
     });
-    load_level({ "player_x": 200, "player_y": 300, walls: [
-            { "x": 4, "y": 4, "width": 40, "height": 100, type: "metal" },
-            { "x": 220, "y": 30, "width": 100, "height": 10, type: "wood" },
-            { "x": 220, "y": 400, "width": 60, "height": 30, type: "metal", switch: "red" }
-        ], "spawners": [
-            { "x": 600, "y": 300, delay: 2000 }
-        ], "switches": [
-            { "x": 900, "y": 300, key: "red" }
-        ]
-    }, this);
+    fetch("level_data.json").then(function (x) { return x.text(); }).then(function (obj) {
+        load_level(JSON.parse(obj), this);
+    }.bind(this));
 }
 function get_vector_towards_player(scene, obj, length) {
     if (length === void 0) { length = 1; }
@@ -95,6 +90,7 @@ function update() {
     var walls = this.data.get("walls");
     var switches = this.data.get("switches");
     var player_g = this.data.get("player_g");
+    var end_g = this.data.get("end_g");
     collisions.push({ "v1": bullets, "v2": enemies, "fn": function (x, y) { return destroy_obj(y); } });
     collisions.push({ "v1": bullets, "v2": bombs, "fn": function (x, y) { return detonate_bomb(y, _this); } });
     collisions.push({ "v1": explosions, "v2": enemies, "fn": function (x, y) { return destroy_obj(y); } });
@@ -102,6 +98,7 @@ function update() {
             destroy_obj(y);
         } } });
     collisions.push({ "v1": player_g, "v2": switches, "fn": function (x, y) { clear_switch(y.getData("key"), this); }.bind(this) });
+    collisions.push({ "v1": player_g, "v2": end_g, "fn": function (x, y) { destroy_obj(y); alert("you win!"); }.bind(this) });
     for (var _i = 0, collisions_1 = collisions; _i < collisions_1.length; _i++) {
         var collider_check = collisions_1[_i];
         for (var _a = 0, _b = collider_check.v1.children.entries; _a < _b.length; _a++) {

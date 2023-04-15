@@ -10,6 +10,7 @@ function load_level(val : level_data, scene : Phaser.Scene){
 	scene.data.set("player", scene.physics.add.image(val.player_x, val.player_y, "player"));
     scene.data.get("player_g").add(scene.data.get("player"));
 
+    scene.data.get("end_g").add(scene.physics.add.image(val.end_x, val.end_y, "end_img"));
 	scene.cameras.main.startFollow(scene.data.get("player"));
 	
 	for(let wall of val.walls){
@@ -35,7 +36,7 @@ function load_level(val : level_data, scene : Phaser.Scene){
 
 function add_spawner(x : number, y : number, delay : number, scene : Phaser.Scene){
 	var spawner_obj = scene.physics.add.image(x,y, "spawner");
-	
+	// spawn enemies
 	scene.time.addEvent({
 		callback : function(scene : Phaser.Scene, spawner : db){
 			if(!spawner.active){
@@ -54,7 +55,7 @@ function add_spawner(x : number, y : number, delay : number, scene : Phaser.Scen
 					destroy_obj(thing);
 				}, 
 				args : [new_image],
-				delay : delay
+				delay : enemy_lifespan
 			})
 			// move towards player
 			var move_timer = scene.time.addEvent({
@@ -71,7 +72,7 @@ function add_spawner(x : number, y : number, delay : number, scene : Phaser.Scen
 			new_image.setData("timers", [move_timer, destroy_timer]);
 		},
 		args : [scene, spawner_obj],
-		delay : 2600,
+		delay : delay,
 		loop : true
 	})
 	scene.data.get("spawners").add(spawner_obj);
@@ -82,7 +83,12 @@ function add_wall(x: number, y: number, width: number, height: number, type : "m
 	wall_obj.setCrop(0, 0, width, height);
 	wall_obj.body.setSize(width, height, false);
 	wall_obj.setData("type", type);
-    wall_obj.setData("switch", switch_);
+    if(switch_){
+        wall_obj.setData("switch", switch_);
+		if(!isNaN(parseInt(switch_))){
+        	wall_obj.setTint(parseInt(switch_),parseInt(switch_),parseInt(switch_),parseInt(switch_));
+		}
+    }
 	scene.data.get("walls").add(wall_obj);
 	//@ts-ignore 
 	wall_obj.getBounds = () => new Phaser.Geom.Rectangle(x, y, width, height); 

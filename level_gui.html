@@ -1,0 +1,299 @@
+<html>
+    <head>
+
+    </head>
+    <body>
+        <div id="main" style="position: absolute; left:100; top:0; width:800; height:600; border:1px solid black"></div>
+            
+        <div id="options" style="position: absolute; left:910; top:0; width:300; height:600; border:1px solid black">
+            <!-- Python code :
+
+                for item in ["Metal wall", "Wood wall", "Switched wall", "Switch", "Enemy spawner", "Player start", "Player end"]:
+                    print('<input type="radio" onclick="radio(\'thing\')" name="whattoput" value="thing" />thing<br />'.replace('thing', item))
+                
+            -->
+            <input type="radio" onclick="radio('Metal wall')" name="whattoput" value="Metal wall" />Metal wall<br />
+            <input type="radio" onclick="radio('Wood wall')" name="whattoput" value="Wood wall" />Wood wall<br />
+            <input type="radio" onclick="radio('Switched wall')" name="whattoput" value="Switched wall" />Switched wall<br />
+            <input type="radio" onclick="radio('Switch')" name="whattoput" value="Switch" />Switch<br />
+            <input type="radio" onclick="radio('Enemy spawner')" name="whattoput" value="Enemy spawner" />Enemy spawner<br />
+            <input type="radio" onclick="radio('Player start')" name="whattoput" value="Player start" />Player start<br />
+            <input type="radio" onclick="radio('Player end')" name="whattoput" value="Player end" />Player end<br />
+            <div id="extra"></div><br />
+            <div id="selected"></div><br />
+            
+            <!-- 
+                Python code: 
+for item in ["wall", "switch", "spawner", "start_end"]:
+    print(f'{item}<button onclick="render_{item}=false;render()"> Hide</button><button onclick="render_{item}=true;render()"> Show</button><br />')
+            -->
+            wall<button onclick="render_wall=false;render()"> Hide</button><button onclick="render_wall=true;render()"> Show</button><br />
+            switch<button onclick="render_switch=false;render()"> Hide</button><button onclick="render_switch=true;render()"> Show</button><br />
+            spawner<button onclick="render_spawner=false;render()"> Hide</button><button onclick="render_spawner=true;render()"> Show</button><br />
+            start_end<button onclick="render_start_end=false;render()"> Hide</button><button onclick="render_start_end=true;render()"> Show</button><br />
+            
+
+            Scale factor <input type="text" id="scale_factor" />
+        </input> 
+        </div>
+
+        <div id="options" style="position: absolute; left:1220; top:0; width:300; height:600; border:1px solid black">
+            <h2>How to use the level editor:</h2>
+            <ul>
+                <li> to add walls, simply click on the top left and bottom right corners.</li>
+                <li>To add switches or enemy spawners, simply click on where you want to add them</li>
+                <li>To select an existing object, click on it on the map</li>
+                <li>You can change the properties of existing objects, but <b>remember to click update</b> otherwise your changes will not be saved.
+                </li>
+                <li>If you want to add an object on top of an existing object, clicking the location will select the existing object instead. To avoid this problem, hide them before adding </li>
+                <li>The scale factor is how many in-game pixels is one GUI pixel. For example: a scale factor of 5 means that every pixel on the GUI is 5 pixels in game.</li>
+            </ul>
+        </div>
+        <div id="bottom" style="position: absolute; top:600px; left:100px">
+            <button onclick="export_data()">Export</button><br />
+            <textarea id="data_out123"></textarea><br />
+        </div>
+
+        <div id="walls"></div>
+        <script>
+            var state = "Metal wall";
+            var new_wall = null;
+            var walls = []
+            var switches = [];
+            var player_start = [0,0];
+            var player_end = [100, 100];
+            var spawners = [];
+            function radio(s){
+                var output = s + "<br />";
+                new_wall = null;
+                state = s;
+                switch(s){
+                    case "Switched wall":
+                      output += `Switch name <input type="text" id="data" /> `
+                    break;
+                    case "Switch":
+                        output += `Switch name <input type="text" id="data" /> `
+                    break;
+                    case "Enemy spawner":
+                        output += `Spawn delay <input type="text" id="data" /> `
+                    break;
+                }
+                document.getElementById("extra").innerHTML = output;
+            }
+            function min(x,y){
+                if(x <y){
+                    return x 
+                } else {
+                    return y
+                }
+            }
+            function max(x,y){
+                if(x > y){
+                    return x;
+                } else{ 
+                    return y;
+                }
+            }
+            function mainclick(e){
+                var param = undefined;
+                if(document.getElementById("data")){
+                    var param = document.getElementById("data").value; 
+                }
+                var x = e.pageX - 100;
+                var y = e.pageY; 
+                if(state == "Metal wall" || state == "Wood wall" || state == "Switched wall"){
+                    if(new_wall == null) { 
+                        new_wall = [x,y];
+                    } else {
+                        var [ox, oy] =new_wall; 
+                        new_wall = null;
+                        walls.push([min(x, ox), min(y, oy), max(x, ox), max(y, oy), state]);
+                        if(state === "Switched wall"){
+                            walls[walls.length-1].push(param);
+                        }
+                        
+                    }
+                } else if (state == "Switch"){
+                    switches.push([x, y, param]);
+                }
+                else if (state == "Enemy spawner"){
+                    if(!isNaN(parseInt(param))){
+                        spawners.push([x, y, parseInt(param)]);
+                    } else {
+                        alert("spawner delay must be a number");
+                    }
+                } else if (state == "Player start"){
+                    player_start = [x,y];
+                } else if (state == "Player end"){
+                    player_end = [x,y];
+                }
+
+                render();
+            }
+            function select_wall(i){
+                var wall = walls[i];
+                s=`top left x<input type="text" id="wall_x" value="${wall[0]}"/> <br />y
+                <input type="text" id="wall_y" value="${wall[1]}"/> <br />
+                bottom right x<input type="text" id="wall_2x" value="${wall[2]}"/> <br />y
+                <input type="text" id="wall_2y" value="${wall[3]}"/> <br />
+                Type<input type="type" id="wall_type" value="${wall[4]}"/> <br />
+                Switch 
+                <input type="type" id="wall_switch" value="${wall[5]}"/> <br />
+                <button onclick="update_wall(${i})"> Update wall</button> <br />
+                <button onclick="remove_wall(${i})"> Remove wall</button> <br />
+                
+                `
+                document.getElementById("selected").innerHTML = s;
+
+                
+            }
+            function update_wall(i){
+                var [a,b,c,d,e,f] = [ document.getElementById("wall_x").value,document.getElementById("wall_y").value,document.getElementById("wall_2x").value,document.getElementById("wall_2y").value,document.getElementById("wall_type").value,document.getElementById("wall_switch").value]
+                var lst = [a,b,c,d].map((x) => parseInt(x));
+                if(["Metal wall", "Wood wall", "Switched wall"].indexOf(e) === -1){
+                    alert("wall type must be Metal wall, Wood wall or Switched wall");
+                    return ;
+                }
+                walls[i] = [...lst,e,f]
+                if(e != "Switched wall"){
+                    walls[i].pop()
+                }
+                render();
+            }
+            function remove_wall(i){
+                walls.splice(i , 1);
+                render();
+            }
+
+            function select_switch(i){
+                var switch_ = switches[i];
+                s=`x<input type="text" id="switch_x" value="${switch_[0]}"/> <br />y
+                <input type="text" id="switch_y" value="${switch_[1]}"/> <br />key
+                <input type="text" id="switch_key" value="${switch_[2]}"/> <br />
+                <button onclick="update_switch(${i})"> Update switch</button> <br />
+                <button onclick="remove_switch(${i})"> Remove switch</button> <br />`
+                document.getElementById("selected").innerHTML = s;
+
+            }
+            function update_switch(i){
+                var [a,b,c] = [document.getElementById("switch_x").value,document.getElementById("switch_y").value,document.getElementById("switch_key").value]
+                var lst  = [a,b].map((x) => parseInt(x));
+                switches[i] = [...lst,c];
+                render();
+
+            }
+
+            function remove_switch(i){
+                switches.splice(i);
+                render();
+            }
+            function select_spawner(i){
+                var spawner = spawners[i];
+                s=`x<input type="text" id="spawner_x" value="${spawner[0]}"/>y
+                <input type="text" id="spawner_y" value="${spawner[1]}"/> <br />
+                <input type="text" id="spawner_delay" value="${spawner[2]}"/> <br />
+                <button onclick="update_spawner(${i})"> Update spawner</button> <br />
+                <button onclick="remove_spawner(${i})"> Remove spawner</button> <br />`
+                document.getElementById("selected").innerHTML = s;
+
+            }
+
+            function update_spawner(i){
+                var [a,b,c] = [document.getElementById("spawner_x").value,document.getElementById("spawner_y").value,document.getElementById("spawner_delay").value]
+                var lst  = [a,b].map((x) => parseInt(x));
+                
+                if(isNaN(parseInt(c))){
+                    alert("spawner delay must be a number");
+                    return; 
+                }
+                spawners[i] = [...lst,c];
+                render();
+
+            }
+            
+            function remove_spawner(i){
+                spawners.splice(i);
+                render();
+            }
+            var render_spawner = true;
+            var render_wall = true;
+            var render_switch = true;
+            var render_start_end = true; 
+            function render(){
+                var s = ""
+                var it = 0;
+                
+                for(var wall of walls){
+                    if(render_wall == false ){
+                        break;
+                    }
+                    var [ox, oy, x, y, state] = wall;    
+                    s += `<div id=wall${it} onclick="select_wall(${it})" class="wall" style="position:absolute; left:${ox+100}px; top:${oy}px; width:${x-ox}px; height:${y-oy}px;background-color:${state == "Metal wall" ?  "#333333" : (state == "Switched wall" ? "#cccccc" :"#ffee33")};border:1px solid black"></div>`
+                    it ++; 
+                }
+                it = 0; 
+                for(var item of switches){
+                    if(render_switch == false ){
+                        break;
+                    }
+                    var [x, y] = item;
+                    s += `<div id=switch${it} onclick="select_switch(${it})" class="switch" style="position:absolute; left:${x+100}px; top:${y}px; width:10px; height:10px;background-color:#ffcccc;border:1px solid black"></div>`
+                    it ++;
+                }
+                it = 0; 
+                for(var item of spawners){
+                    if(render_spawner == false ){
+                        break;
+                    }
+                    var [x, y] = item;
+                    s += `<div id=spawner${it} onclick="select_spawner(${it})" class="spawner" style="position:absolute; left:${x+100}px; top:${y}px; width:10px; height:10px;background-color:#ccccff;border:1px solid black"></div>`
+                    it ++;
+                }
+                if(render_start_end ){
+                
+                    
+                    var [x,y] = player_start;
+                    s += `<div class="start/end" style="position:absolute; left:${x+100}px; top:${y}px;">s</div>`
+                    var [x,y] = player_end;
+                    s += `<div class="start/end" style="position:absolute; left:${x+100}px; top:${y}px;">e</div>`
+                }
+                document.getElementById("walls").innerHTML =s;
+            }
+            function export_data(){
+
+                var sf = parseInt(document.getElementById("scale_factor").value);
+                if(isNaN(sf)){
+                    alert("scale factor must be an number");
+                    return; 
+                }
+
+                var s = {"player_x" : player_start[0]*sf, "player_y" : player_start[1]*sf, 
+                walls : [],
+                spawners : [],
+                switches : [],
+                end_x : player_end[0]*sf,
+                end_y : player_end[1]*sf
+                }
+
+
+                for(var wall of walls){
+                    s.walls.push({"x" : wall[0]*sf, "y" : wall[1]*sf, "width":( wall[2] - wall[0]) * sf, "height" : (wall[3] - wall[1] ) * sf, type : wall[4] == "Wood wall" ? "wood" : "metal" })
+                    if(wall[5] !== undefined){
+                        s.walls[s.walls.length - 1].switch = wall[5];
+                    }
+                }
+
+                for(var item of spawners){
+                    s.spawners.push({"x" : item[0]*sf, "y" : item[1]*sf, "delay": item[2]})
+                }
+                for(var item of switches){
+                    s.switches.push({"x" : item[0]*sf, "y" : item[1]*sf, "key": item[2]})
+                }
+                document.getElementById("data_out123").value = JSON.stringify(s);
+            }
+            document.getElementById("main").addEventListener("click" , mainclick);
+        </script>
+
+    </body>
+
+</html>

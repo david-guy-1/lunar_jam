@@ -55,16 +55,18 @@ function detonate_bomb(bomb : db, scene  : Phaser.Scene){
 
 function clear_switch(key : string, scene : Phaser.Scene){
     // all associated walls need to be destroyed
+    var to_destroy : any[] =[]
     for(var item of scene.data.get("walls").children.entries){
         if(item.getData("switch") === key){
-            destroy_obj(item);
+            to_destroy.push(item);
         }
     }
     // destroy the switch as well
     for(var item of scene.data.get("switches").children.entries){
         if(item.getData("key") === key){
-            destroy_obj(item);
+            to_destroy.push(item);
         }
     }
+    to_destroy.forEach((x) => destroy_obj(x));
     
 }

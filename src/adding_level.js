@@ -7,6 +7,7 @@ function load_level(val, scene) {
     }
     scene.data.set("player", scene.physics.add.image(val.player_x, val.player_y, "player"));
     scene.data.get("player_g").add(scene.data.get("player"));
+    scene.data.get("end_g").add(scene.physics.add.image(val.end_x, val.end_y, "end_img"));
     scene.cameras.main.startFollow(scene.data.get("player"));
     for (var _b = 0, _c = val.walls; _b < _c.length; _b++) {
         var wall = _c[_b];
@@ -45,7 +46,7 @@ function add_spawner(x, y, delay, scene) {
                     destroy_obj(thing);
                 },
                 args: [new_image],
-                delay: delay
+                delay: enemy_lifespan
             });
             var move_timer = scene.time.addEvent({
                 callback: function (scene, thing) {
@@ -61,7 +62,7 @@ function add_spawner(x, y, delay, scene) {
             new_image.setData("timers", [move_timer, destroy_timer]);
         },
         args: [scene, spawner_obj],
-        delay: 2600,
+        delay: delay,
         loop: true
     });
     scene.data.get("spawners").add(spawner_obj);
@@ -72,7 +73,12 @@ function add_wall(x, y, width, height, type, switch_, scene) {
     wall_obj.setCrop(0, 0, width, height);
     wall_obj.body.setSize(width, height, false);
     wall_obj.setData("type", type);
-    wall_obj.setData("switch", switch_);
+    if (switch_) {
+        wall_obj.setData("switch", switch_);
+        if (!isNaN(parseInt(switch_))) {
+            wall_obj.setTint(parseInt(switch_), parseInt(switch_), parseInt(switch_), parseInt(switch_));
+        }
+    }
     scene.data.get("walls").add(wall_obj);
     wall_obj.getBounds = function () { return new Phaser.Geom.Rectangle(x, y, width, height); };
     if (wall_obj.getBounds().width == 600) {

@@ -5,6 +5,7 @@ var player_speed = 200;
 var wall_image_width = 600;
 var wall_image_height = 600;
 var enemy_speed = 150;
+var enemy_lifespan = 5000;
 var player_shoot_delay = 1000;
 var player_bullet_speed = 1000;
 var player_bomb_speed = 200;
