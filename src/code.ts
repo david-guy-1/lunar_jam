@@ -2,9 +2,10 @@
 /// <reference path="../types/lodash/index.d.ts"/>
 type db = Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
 
-type wall_data = {"x" : number, "y":number, "width":number, "height":number, type:"wood"|"metal"}
+type wall_data = {"x" : number, "y":number, "width":number, "height":number, type:"wood"|"metal", switch ?: string}
 type spawner_data = {"x":number, "y":number, "delay" : number}; 
-type level_data = {"player_x" : number, "player_y" : number, walls:wall_data[], spawners:spawner_data[]}
+type switch_data = {"x":number, "y":number, "delay" : number, "key":string}; 
+type level_data = {"player_x" : number, "player_y" : number, walls:wall_data[], spawners:spawner_data[], switches:switch_data[]}
 
 function preload(this : Phaser.Scene ){
 	console.log("preload called");
@@ -13,10 +14,18 @@ function preload(this : Phaser.Scene ){
 	this.load.image("metal_wall", "metal_wall.png")
 	
 	this.load.image("bomb", "bomb.png")
-	this.load.image("explosion", "explosion.png")
+	this.load.spritesheet("explosion_anim_sheet", "explosion_anim.png", {
+		frameWidth: 96,
+		frameHeight: 96,
+	})
 	this.load.image("bullet", "bullet.png")
 	this.load.image("enemy1", "enemy1.png")
 	this.load.image("spawner", "spawner.png")
+	
+	this.load.image("nothing", "nothing.png")
+	this.load.image("explosion_blank", "explosion_blank.png")
+
+
 }
 
 
@@ -100,11 +109,12 @@ function bomb(x : number, y : number, speed : number, scene : Phaser.Scene){
 
 function detonate_bomb(bomb : db, scene  : Phaser.Scene){
 	var [bx, by] = [bomb.x, bomb.y];
-	var explosion = scene.physics.add.image(bx, by, "explosion");
+	var explosion = scene.physics.add.image(bx, by, "explosion_blank");
 	var timer = scene.time.addEvent({callback : destroy_obj, delay : player_explosion_lifespan, args : [explosion]});
 	explosion.setData("timers", [timer]);
 	scene.data.get("player_explosions").add(explosion);
-	
+	var sprite = scene.add.sprite(bx, by, "explosion_anim_sheet")
+	sprite.anims.play("explosion_anim");
 	destroy_obj(bomb);
 	
 }
@@ -118,6 +128,13 @@ function create(this : Phaser.Scene ){
 	this.data.set("player_bullets", this.physics.add.group());
 	this.data.set("player_bombs", this.physics.add.group());
 	this.data.set("player_explosions", this.physics.add.group());
+
+	this.anims.create({
+		key: 'explosion_anim',
+		frames: this.anims.generateFrameNumbers('explosion_anim_sheet', { start: 1, end: 14 }),
+		frameRate:24
+	})
+
 
 	/*
 	this.time.addEvent({
@@ -134,6 +151,8 @@ function create(this : Phaser.Scene ){
 		{"x" : 220, "y":30, "width":100, "height":10, type:"wood"}
 	], "spawners"  : [
 		{"x" : 600, "y" : 300, delay : 2000}
+	], "switches" : [
+
 	]
 	}, this)
 
@@ -154,7 +173,7 @@ function load_level(val : level_data, scene : Phaser.Scene){
 	scene.cameras.main.startFollow(scene.data.get("player"));
 	
 	for(let wall of val.walls){
-		add_wall(wall.x, wall.y, wall.width, wall.height, wall.type, scene); 
+		add_wall(wall.x, wall.y, wall.width, wall.height, wall.type, wall.switch, scene); 
 	}
 
 	//obj1 is player, obj2 is wall (so opposite order of here)
@@ -235,7 +254,7 @@ function add_spawner(x : number, y : number, delay : number, scene : Phaser.Scen
 	})
 	scene.data.get("spawners").add(spawner_obj);
 }
-function add_wall(x: number, y: number, width: number, height: number, type : "metal" | "wood" , scene: Phaser.Scene) {
+function add_wall(x: number, y: number, width: number, height: number, type : "metal" | "wood" ,switch_ : string | undefined, scene: Phaser.Scene) {
 	var wall_obj = scene.physics.add.image(x, y, type === "metal" ? "metal_wall" : "wall")
 	wall_obj.setOrigin(0, 0);
 	wall_obj.setCrop(0, 0, width, height);

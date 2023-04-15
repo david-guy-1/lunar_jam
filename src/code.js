@@ -4,10 +4,15 @@ function preload() {
     this.load.image("wall", "wall.png");
     this.load.image("metal_wall", "metal_wall.png");
     this.load.image("bomb", "bomb.png");
-    this.load.image("explosion", "explosion.png");
+    this.load.spritesheet("explosion_anim_sheet", "explosion_anim.png", {
+        frameWidth: 96,
+        frameHeight: 96,
+    });
     this.load.image("bullet", "bullet.png");
     this.load.image("enemy1", "enemy1.png");
     this.load.image("spawner", "spawner.png");
+    this.load.image("nothing", "nothing.png");
+    this.load.image("explosion_blank", "explosion_blank.png");
 }
 function mousedown_call() {
     var in_click_x = this.cameras.main.scrollX + this.x;
@@ -77,10 +82,12 @@ function bomb(x, y, speed, scene) {
 }
 function detonate_bomb(bomb, scene) {
     var _a = [bomb.x, bomb.y], bx = _a[0], by = _a[1];
-    var explosion = scene.physics.add.image(bx, by, "explosion");
+    var explosion = scene.physics.add.image(bx, by, "explosion_blank");
     var timer = scene.time.addEvent({ callback: destroy_obj, delay: player_explosion_lifespan, args: [explosion] });
     explosion.setData("timers", [timer]);
     scene.data.get("player_explosions").add(explosion);
+    var sprite = scene.add.sprite(bx, by, "explosion_anim_sheet");
+    sprite.anims.play("explosion_anim");
     destroy_obj(bomb);
 }
 function create() {
@@ -92,12 +99,17 @@ function create() {
     this.data.set("player_bullets", this.physics.add.group());
     this.data.set("player_bombs", this.physics.add.group());
     this.data.set("player_explosions", this.physics.add.group());
+    this.anims.create({
+        key: 'explosion_anim',
+        frames: this.anims.generateFrameNumbers('explosion_anim_sheet', { start: 1, end: 14 }),
+        frameRate: 24
+    });
     load_level({ "player_x": 200, "player_y": 300, walls: [
             { "x": 4, "y": 4, "width": 40, "height": 100, type: "metal" },
             { "x": 220, "y": 30, "width": 100, "height": 10, type: "wood" }
         ], "spawners": [
             { "x": 600, "y": 300, delay: 2000 }
-        ]
+        ], "switches": []
     }, this);
 }
 function load_level(val, scene) {
@@ -111,7 +123,7 @@ function load_level(val, scene) {
     scene.cameras.main.startFollow(scene.data.get("player"));
     for (var _b = 0, _c = val.walls; _b < _c.length; _b++) {
         var wall = _c[_b];
-        add_wall(wall.x, wall.y, wall.width, wall.height, wall.type, scene);
+        add_wall(wall.x, wall.y, wall.width, wall.height, wall.type, wall.switch, scene);
     }
     scene.physics.add.collider(scene.data.get("walls"), scene.data.get("player"), collide);
     for (var _d = 0, _e = scene.data.get("walls").children.entries; _d < _e.length; _d++) {
@@ -185,7 +197,7 @@ function add_spawner(x, y, delay, scene) {
     });
     scene.data.get("spawners").add(spawner_obj);
 }
-function add_wall(x, y, width, height, type, scene) {
+function add_wall(x, y, width, height, type, switch_, scene) {
     var wall_obj = scene.physics.add.image(x, y, type === "metal" ? "metal_wall" : "wall");
     wall_obj.setOrigin(0, 0);
     wall_obj.setCrop(0, 0, width, height);
