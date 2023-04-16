@@ -20,6 +20,9 @@ function keydown_call(letter, x, y, scene) {
         if (letter === "Q") {
             scene.data.set("shoot_cd", time + player_shoot_delay);
             shoot(way_x, way_y, player.x, player.y, player_bullet_speed, scene);
+            if (scene.data.get("mute") === false) {
+                scene.sound.add("clap").play();
+            }
             player.tint = 0xcccccc;
             scene.time.addEvent({ "callback": function (x) { return x.tint = 0xffffff; }, args: [player], delay: player_shoot_delay });
         }
@@ -31,6 +34,9 @@ function keydown_call(letter, x, y, scene) {
         if (letter === "W") {
             scene.data.set("bomb_cd", time + player_bomb_delay);
             bomb(way_x, way_y, player_bomb_speed, scene);
+            if (scene.data.get("mute") === false) {
+                scene.sound.add("plant_bomb").play();
+            }
         }
     }
 }

@@ -28,7 +28,10 @@ function preload(this : Phaser.Scene ){
 	this.load.image("nothing", "nothing.png")
 	this.load.image("explosion_blank", "explosion_blank.png")
 
-
+	this.load.audio("clap", ["sounds/clap.wav", "sounds/clap.mp3"]);
+	this.load.audio("plant_bomb", ["sounds/plant_bomb.wav", "sounds/plant_bomb.mp3"]);
+	this.load.audio("switch",[ "sounds/switch.wav","sounds/switch.mp3"]);
+	this.load.audio("boom", ["sounds/boom.wav", "sounds/boom.mp3"]);
 }
 
 
@@ -36,6 +39,7 @@ function preload(this : Phaser.Scene ){
 function create(this : Phaser.Scene ){
 
 	this.input.on("pointerdown",mousedown_call);
+	this.data.set("mute",false);
 	this.data.set("keys",  this.input.keyboard.addKeys('Q,W,E,R,T,A,S,D,F,G'));
 	
 	this.data.set("player_g", this.physics.add.group());
@@ -165,13 +169,13 @@ function update(this : Phaser.Scene ){
 
 	collisions.push({"v1":bullets, "v2":enemies, "fn":(x,y) => destroy_obj(y)}); 
 	
-	collisions.push({"v1":bullets, "v2":bombs, "fn":(x,y) => detonate_bomb(y, this)}); 
+	collisions.push({"v1":bullets, "v2":bombs, "fn":(x,y) => {if(this.data.get("mute") === false ) { this.sound.add("boom").play();}; detonate_bomb(y, this)}} ); 
 
 	collisions.push({"v1":explosions, "v2":enemies, "fn":(x,y) => destroy_obj(y)}); 
 
 	collisions.push({"v1":explosions, "v2":walls, "fn":function(x,y){if(y.getData("type")==="wood"){destroy_obj(y)}}});
 
-	collisions.push({"v1":player_g, "v2":switches, "fn":function(x : any,y : any){clear_switch(y.getData("key"), this)}.bind(this)});
+	collisions.push({"v1":player_g, "v2":switches, "fn":function(x : any,y : any){if(this.data.get("mute") === false ) { this.sound.add("switch").play();}; clear_switch(y.getData("key"), this)}.bind(this)});
 
 	collisions.push({"v1":player_g, "v2":end_g, "fn":function(x : any,y : any){destroy_obj(y); alert("you win!")}.bind(this)});
 

@@ -15,9 +15,14 @@ function preload() {
     this.load.image("end_img", "end_img.png");
     this.load.image("nothing", "nothing.png");
     this.load.image("explosion_blank", "explosion_blank.png");
+    this.load.audio("clap", ["sounds/clap.wav", "sounds/clap.mp3"]);
+    this.load.audio("plant_bomb", ["sounds/plant_bomb.wav", "sounds/plant_bomb.mp3"]);
+    this.load.audio("switch", ["sounds/switch.wav", "sounds/switch.mp3"]);
+    this.load.audio("boom", ["sounds/boom.wav", "sounds/boom.mp3"]);
 }
 function create() {
     this.input.on("pointerdown", mousedown_call);
+    this.data.set("mute", false);
     this.data.set("keys", this.input.keyboard.addKeys('Q,W,E,R,T,A,S,D,F,G'));
     this.data.set("player_g", this.physics.add.group());
     this.data.set("end_g", this.physics.add.group());
@@ -92,12 +97,16 @@ function update() {
     var player_g = this.data.get("player_g");
     var end_g = this.data.get("end_g");
     collisions.push({ "v1": bullets, "v2": enemies, "fn": function (x, y) { return destroy_obj(y); } });
-    collisions.push({ "v1": bullets, "v2": bombs, "fn": function (x, y) { return detonate_bomb(y, _this); } });
+    collisions.push({ "v1": bullets, "v2": bombs, "fn": function (x, y) { if (_this.data.get("mute") === false) {
+            _this.sound.add("boom").play();
+        } ; detonate_bomb(y, _this); } });
     collisions.push({ "v1": explosions, "v2": enemies, "fn": function (x, y) { return destroy_obj(y); } });
     collisions.push({ "v1": explosions, "v2": walls, "fn": function (x, y) { if (y.getData("type") === "wood") {
             destroy_obj(y);
         } } });
-    collisions.push({ "v1": player_g, "v2": switches, "fn": function (x, y) { clear_switch(y.getData("key"), this); }.bind(this) });
+    collisions.push({ "v1": player_g, "v2": switches, "fn": function (x, y) { if (this.data.get("mute") === false) {
+            this.sound.add("switch").play();
+        } ; clear_switch(y.getData("key"), this); }.bind(this) });
     collisions.push({ "v1": player_g, "v2": end_g, "fn": function (x, y) { destroy_obj(y); alert("you win!"); }.bind(this) });
     for (var _i = 0, collisions_1 = collisions; _i < collisions_1.length; _i++) {
         var collider_check = collisions_1[_i];

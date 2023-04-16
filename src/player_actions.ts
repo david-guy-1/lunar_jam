@@ -16,6 +16,9 @@ function shoot(x : number, y : number, px : number, py : number, speed : number,
 	group.add(bullet); // adding to group sets velocity to zero, so add to group first before setting velocity.
 	bullet.setVelocity(v.x, v.y);
     
+
+
+
 }
 
 function bomb(x : number, y : number, speed : number, scene : Phaser.Scene){
@@ -32,9 +35,12 @@ function bomb(x : number, y : number, speed : number, scene : Phaser.Scene){
 		delay : player_bomb_move_time,
 		args : [bomb]
 	})
+	
 	bomb.setData("timers", [timer]);
-
 	bomb.setVelocity(v.x, v.y);
+
+
+	
 }	
 
 function detonate_bomb(bomb : db, scene  : Phaser.Scene){
@@ -50,7 +56,6 @@ function detonate_bomb(bomb : db, scene  : Phaser.Scene){
         shoot(Math.cos(theta), Math.sin(theta), bx, by, player_bullet_speed, scene); 
     }
 	destroy_obj(bomb);
-	
 }
 
 function clear_switch(key : string, scene : Phaser.Scene){
@@ -68,5 +73,5 @@ function clear_switch(key : string, scene : Phaser.Scene){
         }
     }
     to_destroy.forEach((x) => destroy_obj(x));
-    
+	
 }
