@@ -13,11 +13,19 @@ function keydown_call(letter, x, y, scene) {
     var player = scene.data.get("player");
     var way_x = in_click_x - player.x;
     var way_y = in_click_y - player.y;
-    if (cooldown !== undefined && cooldown > time) {
-        ;
-    }
-    else {
-        if (letter === "Q") {
+    if (letter === "Q") {
+        if (cooldown !== undefined && cooldown > time) {
+            if (scene.data.get("displaying") === false) {
+                scene.data.set("displaying", true);
+                var text = scene.add.text(scene.cameras.main.scrollX + game_width / 2 - 200, scene.cameras.main.scrollY + 50, "You can only shoot every 10 seconds! (".concat(((cooldown - time) / 1000).toString().slice(0, 4), ")"));
+                scene.time.addEvent({
+                    callback: function (text, scene) { scene.data.set("displaying", false); text.destroy(); },
+                    delay: 400,
+                    args: [text, scene]
+                });
+            }
+        }
+        else {
             scene.data.set("shoot_cd", time + player_shoot_delay);
             shoot(way_x, way_y, player.x, player.y, player_bullet_speed, scene);
             if (scene.data.get("mute") === false) {
@@ -27,11 +35,11 @@ function keydown_call(letter, x, y, scene) {
             scene.time.addEvent({ "callback": function (x) { return x.tint = 0xffffff; }, args: [player], delay: player_shoot_delay });
         }
     }
-    if (bomb_cooldown !== undefined && bomb_cooldown > time) {
-        ;
-    }
-    else {
-        if (letter === "W") {
+    if (letter === "W") {
+        if (bomb_cooldown !== undefined && bomb_cooldown > time) {
+            ;
+        }
+        else {
             scene.data.set("bomb_cd", time + player_bomb_delay);
             bomb(way_x, way_y, player_bomb_speed, scene);
             if (scene.data.get("mute") === false) {

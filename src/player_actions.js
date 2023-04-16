@@ -9,6 +9,7 @@ function shoot(x, y, px, py, speed, scene) {
     var bullet = scene.physics.add.image(px, py, "bullet");
     group.add(bullet);
     bullet.setVelocity(v.x, v.y);
+    bullet.setData("timer", [scene.time.addEvent({ "callback": function (x) { return destroy_obj(x); }, args: [bullet], delay: 5000 })]);
 }
 function bomb(x, y, speed, scene) {
     var px = scene.data.get("player").x;

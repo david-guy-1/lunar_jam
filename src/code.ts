@@ -9,7 +9,7 @@ type level_data = {"player_x" : number, "player_y" : number, walls:wall_data[], 
 
 function preload(this : Phaser.Scene ){
 	console.log("preload called");
-	this.load.image("player", "test.png")
+	this.load.spritesheet("player", "astro.png",{frameWidth:64, frameHeight : 64})
 	this.load.image("wall", "wall.png")
 	this.load.image("metal_wall", "metal_wall.png")
 	
@@ -20,9 +20,9 @@ function preload(this : Phaser.Scene ){
 		frameHeight: 96,
 	})
 	this.load.image("bullet", "bullet.png")
-	this.load.image("enemy1", "enemy1.png")
+	this.load.spritesheet("enemy1", "alien.png", {frameWidth:32, frameHeight : 32})
 	this.load.image("spawner", "spawner.png")
-	this.load.image("end_img", "end_img.png")
+	this.load.spritesheet("end_img", "spaceship.png", {frameWidth:64, frameHeight : 64})
 	
 	
 	this.load.image("nothing", "nothing.png")
@@ -41,7 +41,8 @@ function create(this : Phaser.Scene ){
 	this.input.on("pointerdown",mousedown_call);
 	this.data.set("mute",false);
 	this.data.set("keys",  this.input.keyboard.addKeys('Q,W,E,R,T,A,S,D,F,G'));
-	
+	this.data.set("displaying", false);
+
 	this.data.set("player_g", this.physics.add.group());
 	this.data.set("end_g", this.physics.add.group());
 	this.data.set("walls", this.physics.add.group());
@@ -58,8 +59,25 @@ function create(this : Phaser.Scene ){
 		frames: this.anims.generateFrameNumbers('explosion_anim_sheet', { start: 1, end: 14 }),
 		frameRate:24
 	})
+	this.anims.create({
+		key: 'end_anim',
+		frames: this.anims.generateFrameNumbers('end_img', { start: 1, end: 12 }),
+		frameRate:24,
+		repeat : -1
+	})
+	this.anims.create({
+		key: 'player_anim',
+		frames: this.anims.generateFrameNumbers('player', { start: 1, end: 4 }),
+		frameRate:7,
+		repeat : -1
+	})
 
-
+	this.anims.create({
+		key: 'player_anim',
+		frames: this.anims.generateFrameNumbers('enemy1', { start: 1, end: 4 }),
+		frameRate:7,
+		repeat : -1
+	})
 	/*
 	this.time.addEvent({
 		callback : shoot,

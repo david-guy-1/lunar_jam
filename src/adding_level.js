@@ -5,9 +5,13 @@ function load_level(val, scene) {
             throw item + " must be in scene";
         }
     }
-    scene.data.set("player", scene.physics.add.image(val.player_x, val.player_y, "player"));
-    scene.data.get("player_g").add(scene.data.get("player"));
-    scene.data.get("end_g").add(scene.physics.add.image(val.end_x, val.end_y, "end_img"));
+    var player = scene.physics.add.sprite(val.player_x, val.player_y, "player");
+    player.anims.play("player_anim");
+    scene.data.set("player", player);
+    scene.data.get("player_g").add(player);
+    var end = scene.physics.add.sprite(val.end_x, val.end_y, "end_img");
+    end.anims.play("end_anim");
+    scene.data.get("end_g").add(end);
     scene.cameras.main.startFollow(scene.data.get("player"));
     for (var _b = 0, _c = val.walls; _b < _c.length; _b++) {
         var wall = _c[_b];
@@ -34,7 +38,8 @@ function add_spawner(x, y, delay, scene) {
             if (!spawner.active) {
                 return;
             }
-            var new_image = scene.physics.add.image(spawner.x, spawner.y, "enemy1");
+            var new_image = scene.physics.add.sprite(spawner.x, spawner.y, "enemy1");
+            new_image.anims.play("");
             scene.data.get("enemies").add(new_image);
             var v = get_vector_towards_player(scene, new_image, enemy_speed);
             new_image.setVelocity(v.x, v.y);

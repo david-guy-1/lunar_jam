@@ -15,7 +15,8 @@ function shoot(x : number, y : number, px : number, py : number, speed : number,
 	var bullet = scene.physics.add.image(px, py, "bullet");
 	group.add(bullet); // adding to group sets velocity to zero, so add to group first before setting velocity.
 	bullet.setVelocity(v.x, v.y);
-    
+	// destroy bullet 
+    bullet.setData("timer", [scene.time.addEvent({"callback":(x : any) => destroy_obj(x), args:[bullet], delay:5000})])
 
 
 
