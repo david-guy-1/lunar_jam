@@ -22,7 +22,7 @@ function shoot(x : number, y : number, px : number, py : number, speed : number,
 
 }
 
-function bomb(x : number, y : number, speed : number, scene : Phaser.Scene){
+function bomb(x : number, y : number, speed : number, travel_time : number, scene : Phaser.Scene){
 	var px : number = scene.data.get("player").x;
 	var py : number = scene.data.get("player").y;
 	var v = new Phaser.Math.Vector2(x , y); 
@@ -33,7 +33,7 @@ function bomb(x : number, y : number, speed : number, scene : Phaser.Scene){
 	// destroy the bomb 
 	var timer = scene.time.addEvent({
 		callback : (x : any)  => x.setVelocity(0,0),
-		delay : player_bomb_move_time,
+		delay : travel_time,
 		args : [bomb]
 	})
 	

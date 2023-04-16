@@ -62,13 +62,19 @@ function add_spawner(x : number, y : number, delay : number, scene : Phaser.Scen
 				args : [new_image],
 				delay : enemy_lifespan
 			})
-			// move towards player
+			// move in a random direction or towards the player
 			var move_timer = scene.time.addEvent({
 				callback : function(scene : Phaser.Scene, thing : db){
 					if(!thing.active){
 						return;
 					}
-					move_towards_player(scene, thing, enemy_speed); 
+					if(Math.random () < 0.7){ 
+						move_towards_player(scene, thing, enemy_speed); 
+					} else {
+						var theta = Math.random() * 2 * Math.PI;
+						thing.setVelocity(Math.cos(theta) * enemy_speed, Math.sin(theta) * enemy_speed);
+					}
+					
 				}, 
 				args : [scene , new_image],
 				delay : 300,
@@ -105,5 +111,8 @@ function add_wall(x: number, y: number, width: number, height: number, type : "m
   function add_switch(x : number, y : number, key : string, scene : Phaser.Scene){
     var switch_obj = scene.physics.add.image(x, y, "switch");
     switch_obj.setData("key", key);
+	if(!isNaN(parseInt(key))){
+		switch_obj.setTint(parseInt(key),parseInt(key),parseInt(key),parseInt(key));
+	}
     scene.data.get("switches").add(switch_obj);
   }

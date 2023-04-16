@@ -40,8 +40,10 @@ function keydown_call(letter, x, y, scene) {
             ;
         }
         else {
+            var dist = Math.sqrt(Math.pow(way_x, 2) + Math.pow(way_y, 2));
             scene.data.set("bomb_cd", time + player_bomb_delay);
-            bomb(way_x, way_y, player_bomb_speed, scene);
+            scene.data.set("bomb_cd", time + player_bomb_delay);
+            bomb(way_x, way_y, player_bomb_speed, dist / player_bomb_speed * 1000, scene);
             if (scene.data.get("mute") === false) {
                 scene.sound.add("plant_bomb").play();
             }

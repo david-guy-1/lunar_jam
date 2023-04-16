@@ -58,7 +58,13 @@ function add_spawner(x, y, delay, scene) {
                     if (!thing.active) {
                         return;
                     }
-                    move_towards_player(scene, thing, enemy_speed);
+                    if (Math.random() < 0.7) {
+                        move_towards_player(scene, thing, enemy_speed);
+                    }
+                    else {
+                        var theta = Math.random() * 2 * Math.PI;
+                        thing.setVelocity(Math.cos(theta) * enemy_speed, Math.sin(theta) * enemy_speed);
+                    }
                 },
                 args: [scene, new_image],
                 delay: 300,
@@ -93,6 +99,9 @@ function add_wall(x, y, width, height, type, switch_, scene) {
 function add_switch(x, y, key, scene) {
     var switch_obj = scene.physics.add.image(x, y, "switch");
     switch_obj.setData("key", key);
+    if (!isNaN(parseInt(key))) {
+        switch_obj.setTint(parseInt(key), parseInt(key), parseInt(key), parseInt(key));
+    }
     scene.data.get("switches").add(switch_obj);
 }
 //# sourceMappingURL=adding_level.js.map

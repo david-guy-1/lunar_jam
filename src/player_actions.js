@@ -11,7 +11,7 @@ function shoot(x, y, px, py, speed, scene) {
     bullet.setVelocity(v.x, v.y);
     bullet.setData("timer", [scene.time.addEvent({ "callback": function (x) { return destroy_obj(x); }, args: [bullet], delay: 5000 })]);
 }
-function bomb(x, y, speed, scene) {
+function bomb(x, y, speed, travel_time, scene) {
     var px = scene.data.get("player").x;
     var py = scene.data.get("player").y;
     var v = new Phaser.Math.Vector2(x, y);
@@ -21,7 +21,7 @@ function bomb(x, y, speed, scene) {
     group.add(bomb);
     var timer = scene.time.addEvent({
         callback: function (x) { return x.setVelocity(0, 0); },
-        delay: player_bomb_move_time,
+        delay: travel_time,
         args: [bomb]
     });
     bomb.setData("timers", [timer]);

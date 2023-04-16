@@ -9,15 +9,15 @@ type level_data = {"player_x" : number, "player_y" : number, walls:wall_data[], 
 
 function preload(this : Phaser.Scene ){
 	console.log("preload called");
-	this.load.spritesheet("player", "astro.png",{frameWidth:64, frameHeight : 64})
+	this.load.spritesheet("player", "astro.png",{frameWidth:54/2, frameHeight : 72/2})
 	this.load.image("wall", "wall.png")
 	this.load.image("metal_wall", "metal_wall.png")
 	
 	this.load.image("switch", "switch.png")
 	this.load.image("bomb", "bomb.png")
 	this.load.spritesheet("explosion_anim_sheet", "explosion_anim.png", {
-		frameWidth: 96,
-		frameHeight: 96,
+		frameWidth: 768/4,
+		frameHeight: 768/4,
 	})
 	this.load.image("bullet", "bullet.png")
 	this.load.spritesheet("enemy1", "alien.png", {frameWidth:32, frameHeight : 32})
