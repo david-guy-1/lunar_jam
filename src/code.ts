@@ -4,8 +4,11 @@ type db = Phaser.Types.Physics.Arcade.ImageWithDynamicBody;
 
 type wall_data = {"x" : number, "y":number, "width":number, "height":number, type:"wood"|"metal", switch ?: string}
 type spawner_data = {"x":number, "y":number, "delay" : number}; 
-type switch_data = {"x":number, "y":number,  "key":string}; 
-type level_data = {"player_x" : number, "player_y" : number, walls:wall_data[], spawners:spawner_data[], switches:switch_data[], "end_x" : number, "end_y" : number}
+type switch_data = {"x":number, "y":number,  "key":string};
+type text_data = {"x":number, "y":number,  "key":string};;  
+type level_data = {"player_x" : number, "player_y" : number, walls:wall_data[], spawners:spawner_data[], switches:switch_data[], texts ?: text_data[], "end_x" : number, "end_y" : number}
+
+var level = 4;
 
 function preload(this : Phaser.Scene ){
 	console.log("preload called");
@@ -15,6 +18,7 @@ function preload(this : Phaser.Scene ){
 	
 	this.load.image("switch", "switch.png")
 	this.load.image("bomb", "bomb.png")
+	this.load.image('background', 'MoonBG.png');
 	this.load.spritesheet("explosion_anim_sheet", "explosion_anim.png", {
 		frameWidth: 768/4,
 		frameHeight: 768/4,
@@ -34,15 +38,22 @@ function preload(this : Phaser.Scene ){
 	this.load.audio("boom", ["sounds/boom.wav", "sounds/boom.mp3"]);
 }
 
+function reset(scene : Phaser.Scene){
+	scene.data.set("shoot_cd", undefined);
+	scene.data.set("bomb_cd", undefined);
+	scene.scene.restart();
 
+
+}
 
 function create(this : Phaser.Scene ){
-
+	console.log("create called")
+	/// first, the background
+	this.add.image(game_width/2, game_height/2, "background").setScrollFactor(0);;
 	this.input.on("pointerdown",mousedown_call);
 	this.data.set("mute",false);
 	this.data.set("keys",  this.input.keyboard.addKeys('Q,W,E,R,T,A,S,D,F,G'));
 	this.data.set("displaying", false);
-
 	this.data.set("player_g", this.physics.add.group());
 	this.data.set("end_g", this.physics.add.group());
 	this.data.set("walls", this.physics.add.group());
@@ -67,14 +78,14 @@ function create(this : Phaser.Scene ){
 	})
 	this.anims.create({
 		key: 'player_anim',
-		frames: this.anims.generateFrameNumbers('player', { start: 1, end: 4 }),
+		frames: this.anims.generateFrameNumbers('player', { start: 1, end: 3 }),
 		frameRate:7,
 		repeat : -1
 	})
 
 	this.anims.create({
-		key: 'player_anim',
-		frames: this.anims.generateFrameNumbers('enemy1', { start: 1, end: 4 }),
+		key: 'enemy_anim',
+		frames: this.anims.generateFrameNumbers('enemy1', { start: 1, end: 3 }),
 		frameRate:7,
 		repeat : -1
 	})
@@ -102,8 +113,9 @@ function create(this : Phaser.Scene ){
 	}, this)
 */
 // load a level
-	fetch("level_data.json").then((x) => x.text()).then(function(obj : string) {
-		load_level(JSON.parse(obj), this)
+// ${this.data.get("level")}
+	fetch(`level_data.json`).then((x) => x.text()).then(function(obj : string) {
+		load_level(JSON.parse(obj)[level], this)
 	}.bind(this));
 
 
@@ -147,7 +159,7 @@ function add_wall(x:number, y:number, width:number, height:number, scene:Phaser.
 }
 */
 function collide(obj1 : Phaser.Physics.Arcade.Image, obj2 : Phaser.Physics.Arcade.Image){
-	console.log(obj1);
+//	console.log(obj1);
 	
 
 }
@@ -156,6 +168,9 @@ function update(this : Phaser.Scene ){
 	const game = this.game;
 
 	var player : Phaser.Physics.Arcade.Image = this.data.get("player") ;
+	if(!player || !player.active){
+		return; 
+	}
 	if(this.data.get("x") !== undefined && this.data.get("y") !== undefined){ 
 		var direction = new Phaser.Math.Vector2( this.data.get("x")-player.x  , this.data.get("y")- player.y );
 		if(direction.length() < player_speed/fps){
@@ -195,7 +210,7 @@ function update(this : Phaser.Scene ){
 
 	collisions.push({"v1":player_g, "v2":switches, "fn":function(x : any,y : any){if(this.data.get("mute") === false ) { this.sound.add("switch").play();}; clear_switch(y.getData("key"), this)}.bind(this)});
 
-	collisions.push({"v1":player_g, "v2":end_g, "fn":function(x : any,y : any){destroy_obj(y); alert("you win!")}.bind(this)});
+	collisions.push({"v1":player_g, "v2":end_g, "fn":function(this : Phaser.Scene , x : any,y : any){level += 1; destroy_obj(y); reset(this)}.bind(this)});
 
 	for(let collider_check of collisions){
 		for(let item of collider_check.v1.children.entries){
@@ -238,7 +253,7 @@ const config = {
 	  default: 'arcade',
 	  arcade: {
 		  fixedStep : true,
-		  debug: true,
+		  debug: false,
 		  fps: fps
 	  }
   },

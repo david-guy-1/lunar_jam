@@ -1,3 +1,5 @@
+;
+var level = 4;
 function preload() {
     console.log("preload called");
     this.load.spritesheet("player", "astro.png", { frameWidth: 54 / 2, frameHeight: 72 / 2 });
@@ -5,6 +7,7 @@ function preload() {
     this.load.image("metal_wall", "metal_wall.png");
     this.load.image("switch", "switch.png");
     this.load.image("bomb", "bomb.png");
+    this.load.image('background', 'MoonBG.png');
     this.load.spritesheet("explosion_anim_sheet", "explosion_anim.png", {
         frameWidth: 768 / 4,
         frameHeight: 768 / 4,
@@ -20,7 +23,15 @@ function preload() {
     this.load.audio("switch", ["sounds/switch.wav", "sounds/switch.mp3"]);
     this.load.audio("boom", ["sounds/boom.wav", "sounds/boom.mp3"]);
 }
+function reset(scene) {
+    scene.data.set("shoot_cd", undefined);
+    scene.data.set("bomb_cd", undefined);
+    scene.scene.restart();
+}
 function create() {
+    console.log("create called");
+    this.add.image(game_width / 2, game_height / 2, "background").setScrollFactor(0);
+    ;
     this.input.on("pointerdown", mousedown_call);
     this.data.set("mute", false);
     this.data.set("keys", this.input.keyboard.addKeys('Q,W,E,R,T,A,S,D,F,G'));
@@ -48,18 +59,18 @@ function create() {
     });
     this.anims.create({
         key: 'player_anim',
-        frames: this.anims.generateFrameNumbers('player', { start: 1, end: 4 }),
+        frames: this.anims.generateFrameNumbers('player', { start: 1, end: 3 }),
         frameRate: 7,
         repeat: -1
     });
     this.anims.create({
-        key: 'player_anim',
-        frames: this.anims.generateFrameNumbers('enemy1', { start: 1, end: 4 }),
+        key: 'enemy_anim',
+        frames: this.anims.generateFrameNumbers('enemy1', { start: 1, end: 3 }),
         frameRate: 7,
         repeat: -1
     });
     fetch("level_data.json").then(function (x) { return x.text(); }).then(function (obj) {
-        load_level(JSON.parse(obj), this);
+        load_level(JSON.parse(obj)[level], this);
     }.bind(this));
 }
 function get_vector_towards_player(scene, obj, length) {
@@ -85,12 +96,14 @@ function destroy_obj(obj) {
     obj.destroy();
 }
 function collide(obj1, obj2) {
-    console.log(obj1);
 }
 function update() {
     var _this = this;
     var game = this.game;
     var player = this.data.get("player");
+    if (!player || !player.active) {
+        return;
+    }
     if (this.data.get("x") !== undefined && this.data.get("y") !== undefined) {
         var direction = new Phaser.Math.Vector2(this.data.get("x") - player.x, this.data.get("y") - player.y);
         if (direction.length() < player_speed / fps) {
@@ -126,7 +139,7 @@ function update() {
     collisions.push({ "v1": player_g, "v2": switches, "fn": function (x, y) { if (this.data.get("mute") === false) {
             this.sound.add("switch").play();
         } ; clear_switch(y.getData("key"), this); }.bind(this) });
-    collisions.push({ "v1": player_g, "v2": end_g, "fn": function (x, y) { destroy_obj(y); alert("you win!"); }.bind(this) });
+    collisions.push({ "v1": player_g, "v2": end_g, "fn": function (x, y) { level += 1; destroy_obj(y); reset(this); }.bind(this) });
     for (var _i = 0, collisions_1 = collisions; _i < collisions_1.length; _i++) {
         var collider_check = collisions_1[_i];
         for (var _a = 0, _b = collider_check.v1.children.entries; _a < _b.length; _a++) {
@@ -167,7 +180,7 @@ var config = {
         default: 'arcade',
         arcade: {
             fixedStep: true,
-            debug: true,
+            debug: false,
             fps: fps
         }
     },

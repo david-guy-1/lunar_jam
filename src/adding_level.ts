@@ -34,7 +34,11 @@ function load_level(val : level_data, scene : Phaser.Scene){
     for(let switch_ of val.switches){
         add_switch(switch_.x, switch_.y, switch_.key, scene); 
     }
-
+	if(val.texts){
+		for(var text of val.texts){
+			scene.add.text(text.x, text.y, text.key,  {color : "#000000", fontSize : 20, fontStyle : "bold "});
+		}
+	}
 }
 
 
@@ -47,7 +51,7 @@ function add_spawner(x : number, y : number, delay : number, scene : Phaser.Scen
 				return;
 			}
 			var new_image = scene.physics.add.sprite(spawner.x, spawner.y, "enemy1");
-			new_image.anims.play("")
+			new_image.anims.play("enemy_anim")
 			scene.data.get("enemies").add(new_image);
 			var v = get_vector_towards_player(scene, new_image, enemy_speed); 
 			new_image.setVelocity(v.x, v.y);
@@ -95,6 +99,7 @@ function add_wall(x: number, y: number, width: number, height: number, type : "m
 	wall_obj.body.setSize(width, height, false);
 	wall_obj.setData("type", type);
     if(switch_){
+		scene.add.text(x, y, "O", {fontSize:"72px"});
         wall_obj.setData("switch", switch_);
 		if(!isNaN(parseInt(switch_))){
         	wall_obj.setTint(parseInt(switch_),parseInt(switch_),parseInt(switch_),parseInt(switch_));

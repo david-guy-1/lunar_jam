@@ -22,7 +22,7 @@ function keydown_call (letter : string, x : number, y : number, scene : Phaser.S
 		if(cooldown !== undefined && cooldown > time){
 			if(scene.data.get("displaying") === false){
 				scene.data.set("displaying", true)
-				var text = scene.add.text(scene.cameras.main.scrollX + game_width/2-200, scene.cameras.main.scrollY + 50, `You can only shoot every 10 seconds! (${((cooldown - time)/1000).toString().slice(0, 4)})`);
+				var text = scene.add.text(scene.cameras.main.scrollX + game_width/2-200, scene.cameras.main.scrollY + 50, `You can only shoot every 10 seconds! (${((cooldown - time)/1000).toString().slice(0, 4)})`, {color : "#000000", fontSize : 20, fontStyle : "bold "});
 				scene.time.addEvent({
 					callback : function(text : Phaser.GameObjects.Text, scene : Phaser.Scene
 						){scene.data.set("displaying", false);text.destroy(); },

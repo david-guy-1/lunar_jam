@@ -17,7 +17,7 @@ function keydown_call(letter, x, y, scene) {
         if (cooldown !== undefined && cooldown > time) {
             if (scene.data.get("displaying") === false) {
                 scene.data.set("displaying", true);
-                var text = scene.add.text(scene.cameras.main.scrollX + game_width / 2 - 200, scene.cameras.main.scrollY + 50, "You can only shoot every 10 seconds! (".concat(((cooldown - time) / 1000).toString().slice(0, 4), ")"));
+                var text = scene.add.text(scene.cameras.main.scrollX + game_width / 2 - 200, scene.cameras.main.scrollY + 50, "You can only shoot every 10 seconds! (".concat(((cooldown - time) / 1000).toString().slice(0, 4), ")"), { color: "#000000", fontSize: 20, fontStyle: "bold " });
                 scene.time.addEvent({
                     callback: function (text, scene) { scene.data.set("displaying", false); text.destroy(); },
                     delay: 400,

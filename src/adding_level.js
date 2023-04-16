@@ -30,6 +30,12 @@ function load_level(val, scene) {
         var switch_ = _j[_h];
         add_switch(switch_.x, switch_.y, switch_.key, scene);
     }
+    if (val.texts) {
+        for (var _k = 0, _l = val.texts; _k < _l.length; _k++) {
+            var text = _l[_k];
+            scene.add.text(text.x, text.y, text.key, { color: "#000000", fontSize: 20, fontStyle: "bold " });
+        }
+    }
 }
 function add_spawner(x, y, delay, scene) {
     var spawner_obj = scene.physics.add.image(x, y, "spawner");
@@ -39,7 +45,7 @@ function add_spawner(x, y, delay, scene) {
                 return;
             }
             var new_image = scene.physics.add.sprite(spawner.x, spawner.y, "enemy1");
-            new_image.anims.play("");
+            new_image.anims.play("enemy_anim");
             scene.data.get("enemies").add(new_image);
             var v = get_vector_towards_player(scene, new_image, enemy_speed);
             new_image.setVelocity(v.x, v.y);
@@ -85,6 +91,7 @@ function add_wall(x, y, width, height, type, switch_, scene) {
     wall_obj.body.setSize(width, height, false);
     wall_obj.setData("type", type);
     if (switch_) {
+        scene.add.text(x, y, "O", { fontSize: "72px" });
         wall_obj.setData("switch", switch_);
         if (!isNaN(parseInt(switch_))) {
             wall_obj.setTint(parseInt(switch_), parseInt(switch_), parseInt(switch_), parseInt(switch_));
