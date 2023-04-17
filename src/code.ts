@@ -9,7 +9,8 @@ type text_data = {"x":number, "y":number,  "key":string};;
 type level_data = {"player_x" : number, "player_y" : number, walls:wall_data[], spawners:spawner_data[], switches:switch_data[], texts ?: text_data[], "end_x" : number, "end_y" : number}
 
 var hit_count = 0;
-var level = 1;
+var level = 1
+var level_json : level_data | undefined = undefined;
 var mute = false; 
 
 function preload(this : Phaser.Scene ){
@@ -117,9 +118,13 @@ function create(this : Phaser.Scene ){
 */
 // load a level
 // ${this.data.get("level")}
-	fetch(`level_data.json`).then((x) => x.text()).then(function(obj : string) {
-		load_level(JSON.parse(obj)[level], this)
-	}.bind(this));
+	if(level_json == undefined){
+		fetch(`level_data.json`).then((x) => x.text()).then(function(obj : string) {
+			load_level(JSON.parse(obj)[level], this)
+		}.bind(this));
+	} else {
+		load_level(level_json, this);
+	}
 
 
 	
@@ -220,7 +225,7 @@ function update(this : Phaser.Scene ){
 
 	collisions.push({"v1":player_g, "v2":switches, "fn":function(x : any,y : any){if(mute === false ) { this.sound.add("switch").play();}; clear_switch(y.getData("key"), this)}.bind(this)});
 
-	collisions.push({"v1":player_g, "v2":end_g, "fn":function(this : Phaser.Scene , x : any,y : any){level += 1; destroy_obj(y); reset(this)}.bind(this)});
+	collisions.push({"v1":player_g, "v2":end_g, "fn":function(this : Phaser.Scene , x : any,y : any){level_json=undefined; level += 1; destroy_obj(y); reset(this)}.bind(this)});
 
 	collisions.push({"v1":player_g, "v2":enemies, "fn":function(this : Phaser.Scene, x : any,y : any){hit_by_enemy(y, this)}.bind(this)});
 
@@ -270,7 +275,10 @@ const config = {
 	  }
   },
 };
+var game : Phaser.Game | undefined = undefined; 
+
 setTimeout(() => {
-const game = new Phaser.Game(config);
-document.getElementById("game").appendChild(game.canvas);
+game = new Phaser.Game(config);
+
+document.getElementById("game_el").appendChild(game.canvas);
 }, 10);

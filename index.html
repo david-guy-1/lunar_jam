@@ -17,10 +17,33 @@ npx tsc --watch
 	collect switches <img src="./switch.png" /> to open doors<br />
 	Go inside the spaceship <img src="./spaceship_one.png" /> to win.<br />
 	avoid aliens <img src="alien1.png" />
-	<div style="position:absolute; top:100px; left:300px;"><button id="mutebtn" style="color:#006600;" onclick="mute = !mute; document.getElementById('mutebtn').style.setProperty('color' , mute ? '#ff0000' : '#006600');">Mute/Unmute</button></div>
-<div id="game">
+	<div style="position:absolute; top:100px; left:300px;">
+		<button id="mutebtn" style="color:#006600;" onclick="mute = !mute; document.getElementById('mutebtn').style.setProperty('color' , mute ? '#ff0000' : '#006600');">Mute/Unmute</button>
+		<button  onclick="document.getElementById('credits').style.setProperty('display', ''); ">Show credits</button>
+		<button  onclick="window.open('level_gui.html', '_blank')">Level editor</button>
+		<button  onclick="document.getElementById('import').style.setProperty('display', ''); ">Import level</button>
+	
+	</div>
+<div id="game_el">
 
 </div>
+<div id="credits" style="position: absolute; top:400px; left:400px; width:300px; height:100px; background-color: white; display:none; z-index: 1;">
+	Submitted for <a href="https://itch.io/jam/mini-jam-130-lunar" , target="_blank">Mini jam 130</a><br />
+<a href="https://tdgperson.itch.io" target="_blank"> tdgperson </a>  : programming, some levels , sound effects,  level editor GUI<br />
+ILikeBloons   : art, some levels <br />
+<button onclick="document.getElementById('credits').style.setProperty('display', 'none'); ">Dismiss</button>
+</div>
+
+<div id="import" style="position: absolute; top:300px; left:300px; width:300px; height:200px; background-color: white; display:none; z-index: 1;">
+	Paste JSON code here (will reset your in-game progress)<br />
+	<textarea id="import_area"></textarea><br />
+
+	<button onclick="import_()">Import</button>
+	<button onclick="document.getElementById('import').style.setProperty('display', 'none'); ">Dismiss</button>
+
+	</div>
+
+
 </body>
 <script type="text/javascript" src="lodash.min.js"></script>
 <script type="text/javascript" src="phaser.js"></script>
@@ -31,5 +54,19 @@ npx tsc --watch
 <script type="text/javascript" src="src/adding_level.js"></script>
 <script type="text/javascript" src="src/inputs.js"></script>
 <script type="text/javascript" src="src/player_actions.js"></script>
-
+<script type="text/javascript">
+	function import_(){
+		var code = document.getElementById("import_area").value;
+		try { 
+			code = JSON.parse(code);
+		} catch(e){
+			alert("invalid JSON data");
+			return;
+		}
+		level = 0;
+		level_json = code; 
+		reset( game.scene.getScenes()[0]);
+		document.getElementById('import').style.setProperty('display', 'none');
+	}
+</script>
 </html>

@@ -1,6 +1,7 @@
 ;
 var hit_count = 0;
 var level = 1;
+var level_json = undefined;
 var mute = false;
 function preload() {
     console.log("preload called");
@@ -72,9 +73,14 @@ function create() {
         frameRate: 7,
         repeat: -1
     });
-    fetch("level_data.json").then(function (x) { return x.text(); }).then(function (obj) {
-        load_level(JSON.parse(obj)[level], this);
-    }.bind(this));
+    if (level_json == undefined) {
+        fetch("level_data.json").then(function (x) { return x.text(); }).then(function (obj) {
+            load_level(JSON.parse(obj)[level], this);
+        }.bind(this));
+    }
+    else {
+        load_level(level_json, this);
+    }
 }
 function get_vector_towards_player(scene, obj, length) {
     if (length === void 0) { length = 1; }
@@ -149,7 +155,7 @@ function update() {
     collisions.push({ "v1": player_g, "v2": switches, "fn": function (x, y) { if (mute === false) {
             this.sound.add("switch").play();
         } ; clear_switch(y.getData("key"), this); }.bind(this) });
-    collisions.push({ "v1": player_g, "v2": end_g, "fn": function (x, y) { level += 1; destroy_obj(y); reset(this); }.bind(this) });
+    collisions.push({ "v1": player_g, "v2": end_g, "fn": function (x, y) { level_json = undefined; level += 1; destroy_obj(y); reset(this); }.bind(this) });
     collisions.push({ "v1": player_g, "v2": enemies, "fn": function (x, y) { hit_by_enemy(y, this); }.bind(this) });
     for (var _i = 0, collisions_1 = collisions; _i < collisions_1.length; _i++) {
         var collider_check = collisions_1[_i];
@@ -196,8 +202,9 @@ var config = {
         }
     },
 };
+var game = undefined;
 setTimeout(function () {
-    var game = new Phaser.Game(config);
-    document.getElementById("game").appendChild(game.canvas);
+    game = new Phaser.Game(config);
+    document.getElementById("game_el").appendChild(game.canvas);
 }, 10);
 //# sourceMappingURL=code.js.map
