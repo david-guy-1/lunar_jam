@@ -108,9 +108,7 @@ function add_wall(x: number, y: number, width: number, height: number, type : "m
 	scene.data.get("walls").add(wall_obj);
 	//@ts-ignore 
 	wall_obj.getBounds = () => new Phaser.Geom.Rectangle(x, y, width, height); 
-	if(wall_obj.getBounds().width == 600){
-		throw "invalid wall";
-	}
+
   }
 
   function add_switch(x : number, y : number, key : string, scene : Phaser.Scene){

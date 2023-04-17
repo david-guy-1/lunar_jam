@@ -4,7 +4,6 @@ function mousedown_call() {
     move_to(in_click_x, in_click_y, this.scene);
 }
 function keydown_call(letter, x, y, scene) {
-    console.log(letter);
     var in_click_x = scene.cameras.main.scrollX + x;
     var in_click_y = scene.cameras.main.scrollY + y;
     var time = scene.time.now;

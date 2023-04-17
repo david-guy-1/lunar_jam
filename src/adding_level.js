@@ -99,9 +99,6 @@ function add_wall(x, y, width, height, type, switch_, scene) {
     }
     scene.data.get("walls").add(wall_obj);
     wall_obj.getBounds = function () { return new Phaser.Geom.Rectangle(x, y, width, height); };
-    if (wall_obj.getBounds().width == 600) {
-        throw "invalid wall";
-    }
 }
 function add_switch(x, y, key, scene) {
     var switch_obj = scene.physics.add.image(x, y, "switch");

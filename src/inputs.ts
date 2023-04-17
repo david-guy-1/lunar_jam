@@ -7,7 +7,6 @@ function mousedown_call (this:Phaser.Input.InputPlugin ) {
 }
 
 function keydown_call (letter : string, x : number, y : number, scene : Phaser.Scene ) {
-	console.log(letter);
 	var in_click_x = scene.cameras.main.scrollX + x;
 	var in_click_y = scene.cameras.main.scrollY + y;
 	var time = scene.time.now;
