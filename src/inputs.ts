@@ -33,7 +33,7 @@ function keydown_call (letter : string, x : number, y : number, scene : Phaser.S
 		} else {
 			scene.data.set("shoot_cd", time + player_shoot_delay);
 			shoot(way_x, way_y, player.x  , player.y , player_bullet_speed, scene);
-			if(scene.data.get("mute") === false ) { scene.sound.add("clap").play();}
+			if(mute=== false ) { scene.sound.add("clap").play();}
 			player.tint = 0xcccccc;
 			scene.time.addEvent({"callback" : (x : {tint : number}) => x.tint = 0xffffff, args:[player], delay:player_shoot_delay})
 		}
@@ -48,7 +48,7 @@ function keydown_call (letter : string, x : number, y : number, scene : Phaser.S
 			scene.data.set("bomb_cd", time + player_bomb_delay);
             bomb(way_x, way_y, player_bomb_speed, dist / player_bomb_speed * 1000, scene);
 			
-			if(scene.data.get("mute") === false ) { scene.sound.add("plant_bomb").play();}
+			if(mute=== false ) { scene.sound.add("plant_bomb").play();}
 		}
 	}
 }

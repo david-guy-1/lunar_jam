@@ -33,7 +33,7 @@ function load_level(val, scene) {
     if (val.texts) {
         for (var _k = 0, _l = val.texts; _k < _l.length; _k++) {
             var text = _l[_k];
-            scene.add.text(text.x, text.y, text.key, { color: "#000000", fontSize: 20, fontStyle: "bold " });
+            scene.add.text(text.x, text.y, text.key.replace("(hitcount)", hit_count.toString()), { color: "#000000", fontSize: 20, fontStyle: "bold " });
         }
     }
 }

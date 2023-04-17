@@ -8,7 +8,9 @@ type switch_data = {"x":number, "y":number,  "key":string};
 type text_data = {"x":number, "y":number,  "key":string};;  
 type level_data = {"player_x" : number, "player_y" : number, walls:wall_data[], spawners:spawner_data[], switches:switch_data[], texts ?: text_data[], "end_x" : number, "end_y" : number}
 
-var level = 4;
+var hit_count = 0;
+var level = 1;
+var mute = false; 
 
 function preload(this : Phaser.Scene ){
 	console.log("preload called");
@@ -33,6 +35,7 @@ function preload(this : Phaser.Scene ){
 	this.load.image("explosion_blank", "explosion_blank.png")
 
 	this.load.audio("clap", ["sounds/clap.wav", "sounds/clap.mp3"]);
+	this.load.audio("hit", ["sounds/hit.wav", "sounds/hit.mp3"]);
 	this.load.audio("plant_bomb", ["sounds/plant_bomb.wav", "sounds/plant_bomb.mp3"]);
 	this.load.audio("switch",[ "sounds/switch.wav","sounds/switch.mp3"]);
 	this.load.audio("boom", ["sounds/boom.wav", "sounds/boom.mp3"]);
@@ -163,6 +166,13 @@ function collide(obj1 : Phaser.Physics.Arcade.Image, obj2 : Phaser.Physics.Arcad
 	
 
 }
+function hit_by_enemy(y : db, scene : Phaser.Scene){
+	if(mute === false ) { 
+		scene.sound.add("hit").play();
+	}
+	hit_count++;
+	destroy_obj(y); 
+}
 
 function update(this : Phaser.Scene ){
 	const game = this.game;
@@ -202,15 +212,17 @@ function update(this : Phaser.Scene ){
 
 	collisions.push({"v1":bullets, "v2":enemies, "fn":(x,y) => destroy_obj(y)}); 
 	
-	collisions.push({"v1":bullets, "v2":bombs, "fn":(x,y) => {if(this.data.get("mute") === false ) { this.sound.add("boom").play();}; detonate_bomb(y, this)}} ); 
+	collisions.push({"v1":bullets, "v2":bombs, "fn":(x,y) => {if(mute === false ) { this.sound.add("boom").play();}; detonate_bomb(y, this)}} ); 
 
 	collisions.push({"v1":explosions, "v2":enemies, "fn":(x,y) => destroy_obj(y)}); 
 
 	collisions.push({"v1":explosions, "v2":walls, "fn":function(x,y){if(y.getData("type")==="wood"){destroy_obj(y)}}});
 
-	collisions.push({"v1":player_g, "v2":switches, "fn":function(x : any,y : any){if(this.data.get("mute") === false ) { this.sound.add("switch").play();}; clear_switch(y.getData("key"), this)}.bind(this)});
+	collisions.push({"v1":player_g, "v2":switches, "fn":function(x : any,y : any){if(mute === false ) { this.sound.add("switch").play();}; clear_switch(y.getData("key"), this)}.bind(this)});
 
 	collisions.push({"v1":player_g, "v2":end_g, "fn":function(this : Phaser.Scene , x : any,y : any){level += 1; destroy_obj(y); reset(this)}.bind(this)});
+
+	collisions.push({"v1":player_g, "v2":enemies, "fn":function(this : Phaser.Scene, x : any,y : any){hit_by_enemy(y, this)}.bind(this));
 
 	for(let collider_check of collisions){
 		for(let item of collider_check.v1.children.entries){

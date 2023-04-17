@@ -1,5 +1,7 @@
 ;
-var level = 4;
+var hit_count = 0;
+var level = 1;
+var mute = false;
 function preload() {
     console.log("preload called");
     this.load.spritesheet("player", "astro.png", { frameWidth: 54 / 2, frameHeight: 72 / 2 });
@@ -19,6 +21,7 @@ function preload() {
     this.load.image("nothing", "nothing.png");
     this.load.image("explosion_blank", "explosion_blank.png");
     this.load.audio("clap", ["sounds/clap.wav", "sounds/clap.mp3"]);
+    this.load.audio("hit", ["sounds/hit.wav", "sounds/hit.mp3"]);
     this.load.audio("plant_bomb", ["sounds/plant_bomb.wav", "sounds/plant_bomb.mp3"]);
     this.load.audio("switch", ["sounds/switch.wav", "sounds/switch.mp3"]);
     this.load.audio("boom", ["sounds/boom.wav", "sounds/boom.mp3"]);
@@ -97,6 +100,13 @@ function destroy_obj(obj) {
 }
 function collide(obj1, obj2) {
 }
+function hit_by_enemy(y, scene) {
+    if (mute === false) {
+        scene.sound.add("hit").play();
+    }
+    hit_count++;
+    destroy_obj(y);
+}
 function update() {
     var _this = this;
     var game = this.game;
@@ -129,17 +139,18 @@ function update() {
     var player_g = this.data.get("player_g");
     var end_g = this.data.get("end_g");
     collisions.push({ "v1": bullets, "v2": enemies, "fn": function (x, y) { return destroy_obj(y); } });
-    collisions.push({ "v1": bullets, "v2": bombs, "fn": function (x, y) { if (_this.data.get("mute") === false) {
+    collisions.push({ "v1": bullets, "v2": bombs, "fn": function (x, y) { if (mute === false) {
             _this.sound.add("boom").play();
         } ; detonate_bomb(y, _this); } });
     collisions.push({ "v1": explosions, "v2": enemies, "fn": function (x, y) { return destroy_obj(y); } });
     collisions.push({ "v1": explosions, "v2": walls, "fn": function (x, y) { if (y.getData("type") === "wood") {
             destroy_obj(y);
         } } });
-    collisions.push({ "v1": player_g, "v2": switches, "fn": function (x, y) { if (this.data.get("mute") === false) {
+    collisions.push({ "v1": player_g, "v2": switches, "fn": function (x, y) { if (mute === false) {
             this.sound.add("switch").play();
         } ; clear_switch(y.getData("key"), this); }.bind(this) });
     collisions.push({ "v1": player_g, "v2": end_g, "fn": function (x, y) { level += 1; destroy_obj(y); reset(this); }.bind(this) });
+    collisions.push({ "v1": player_g, "v2": enemies, "fn": function (x, y) { hit_by_enemy(y, this); }.bind(this) });
     for (var _i = 0, collisions_1 = collisions; _i < collisions_1.length; _i++) {
         var collider_check = collisions_1[_i];
         for (var _a = 0, _b = collider_check.v1.children.entries; _a < _b.length; _a++) {

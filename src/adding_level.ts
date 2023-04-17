@@ -36,7 +36,7 @@ function load_level(val : level_data, scene : Phaser.Scene){
     }
 	if(val.texts){
 		for(var text of val.texts){
-			scene.add.text(text.x, text.y, text.key,  {color : "#000000", fontSize : 20, fontStyle : "bold "});
+			scene.add.text(text.x, text.y, text.key.replace("(hitcount)", hit_count.toString()),  {color : "#000000", fontSize : 20, fontStyle : "bold "});
 		}
 	}
 }
