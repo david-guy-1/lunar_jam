@@ -222,7 +222,7 @@ function update(this : Phaser.Scene ){
 
 	collisions.push({"v1":player_g, "v2":end_g, "fn":function(this : Phaser.Scene , x : any,y : any){level += 1; destroy_obj(y); reset(this)}.bind(this)});
 
-	collisions.push({"v1":player_g, "v2":enemies, "fn":function(this : Phaser.Scene, x : any,y : any){hit_by_enemy(y, this)}.bind(this));
+	collisions.push({"v1":player_g, "v2":enemies, "fn":function(this : Phaser.Scene, x : any,y : any){hit_by_enemy(y, this)}.bind(this)});
 
 	for(let collider_check of collisions){
 		for(let item of collider_check.v1.children.entries){
