@@ -88,7 +88,8 @@ function add_spawner(x : number, y : number, delay : number, scene : Phaser.Scen
 		},
 		args : [scene, spawner_obj],
 		delay : delay,
-		loop : true
+		loop : true,
+		startAt : delay-1
 	})
 	scene.data.get("spawners").add(spawner_obj);
 }

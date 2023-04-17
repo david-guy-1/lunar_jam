@@ -80,7 +80,8 @@ function add_spawner(x, y, delay, scene) {
         },
         args: [scene, spawner_obj],
         delay: delay,
-        loop: true
+        loop: true,
+        startAt: delay - 1
     });
     scene.data.get("spawners").add(spawner_obj);
 }
